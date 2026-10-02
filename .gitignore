@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment variables (RAHASIA - jangan sampai ter-upload!)
+.env
+
+# Database
+*.db
+*.db-journal
+
+# Generated QR codes (bisa di-generate ulang)
+public/qrcodes/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*

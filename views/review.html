@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Review Bisnis - ReviewKita</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      .review-box {
+        background: white;
+        padding: 30px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+      }
+      .btn-review {
+        background: #4285f4; /* Warna biru khas Google */
+        color: white;
+        font-size: 18px;
+        padding: 15px 20px;
+        font-weight: bold;
+        width: 100%;
+        display: inline-block;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 25px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .btn-review:hover {
+        background: #3367d6;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>ReviewKita</h1>
+
+      <div class="review-box">
+        <h2 style="margin: 0; color: #333">{{BUSINESS_NAME}}</h2>
+        <p style="color: #666; margin-top: 5px; font-size: 14px">
+          {{BUSINESS_ADDRESS}}
+        </p>
+
+        <p style="margin-top: 25px; font-size: 16px">
+          Bagaimana pengalaman Anda hari ini? Berikan rating dan ulasan Anda di
+          Google.
+        </p>
+
+        <!-- Tombol ini akan membuka link di tab baru (target="_blank") -->
+        <a href="{{REVIEW_URL}}" class="btn-review" target="_blank"
+          >⭐ BERI RATING DI GOOGLE</a
+        >
+      </div>
+    </main>
+  </body>
+</html>

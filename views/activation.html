@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aktivasi Produk - ReviewKita</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      .form-group {
+        margin: 20px 0;
+        text-align: left;
+      }
+      .form-input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      .search-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 5px;
+      }
+      .result-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        display: none;
+      }
+      .result-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        background: white;
+      }
+      .result-item:hover {
+        background: #f8f9fa;
+      }
+      .selected-box {
+        margin-top: 15px;
+        padding: 15px;
+        background: #d4edda;
+        color: #155724;
+        border-radius: 4px;
+        display: none;
+        border: 1px solid #c3e6cb;
+      }
+
+      /* [BARU] Styling untuk PIN dan Error */
+      .pin-box {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        display: none;
+      }
+      #error-msg {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 10px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>ReviewKita</h1>
+      <h2>Aktivasi Produk</h2>
+
+      <div class="form-group">
+        <label>Kode Kartu:</label>
+        <input
+          type="text"
+          id="display-card-code"
+          class="form-input"
+          readonly
+          style="background: #e9ecef; font-weight: bold"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Cari Nama Bisnis Anda:</label>
+        <div class="search-row">
+          <input
+            type="text"
+            id="search-input"
+            class="form-input"
+            style="margin-top: 0"
+            placeholder="Contoh: Kopi Senja Malang"
+          />
+          <button type="button" id="btn-search" class="btn">Cari</button>
+        </div>
+        <div
+          id="search-status"
+          style="margin-top: 5px; font-size: 14px; color: #666"
+        ></div>
+
+        <ul id="search-results" class="result-list"></ul>
+
+        <div id="selected-business-container" class="selected-box">
+          <strong>Bisnis Terpilih:</strong><br />
+          <span id="selected-business-display"></span>
+        </div>
+
+        <input type="hidden" id="selected-place-id" />
+        <input type="hidden" id="selected-business-name" />
+        <input type="hidden" id="selected-business-address" />
+      </div>
+
+      <!-- [BARU] Bagian PIN & Tombol Aktivasi (Akan muncul setelah bisnis dipilih) -->
+      <div id="pin-section" class="pin-box">
+        <div class="form-group">
+          <label>PIN Aktivasi (4 Digit):</label>
+          <input
+            type="password"
+            id="input-pin"
+            class="form-input"
+            maxlength="4"
+            placeholder="• • • •"
+            style="text-align: center; font-size: 24px; letter-spacing: 10px"
+          />
+        </div>
+        <button
+          type="button"
+          id="btn-activate"
+          class="btn"
+          style="width: 100%; background: #28a745"
+        >
+          AKTIVASI KARTU
+        </button>
+        <div id="error-msg"></div>
+      </div>
+    </main>
+
+    <script>
+      const pathParts = window.location.pathname.split("/");
+      const cardCode = pathParts[pathParts.length - 1];
+      document.getElementById("display-card-code").value = cardCode;
+
+      const btnSearch = document.getElementById("btn-search");
+      const searchInput = document.getElementById("search-input");
+      const searchStatus = document.getElementById("search-status");
+      const searchResults = document.getElementById("search-results");
+      const selectedContainer = document.getElementById(
+        "selected-business-container",
+      );
+      const selectedDisplay = document.getElementById(
+        "selected-business-display",
+      );
+
+      const inputPlaceId = document.getElementById("selected-place-id");
+      const inputName = document.getElementById("selected-business-name");
+      const inputAddress = document.getElementById("selected-business-address");
+
+      const pinSection = document.getElementById("pin-section");
+      const btnActivate = document.getElementById("btn-activate");
+      const inputPin = document.getElementById("input-pin");
+      const errorMsg = document.getElementById("error-msg");
+
+      // Pastikan PIN hanya menerima angka
+      inputPin.addEventListener("input", function () {
+        this.value = this.value.replace(/[^0-9]/g, "");
+      });
+
+      btnSearch.addEventListener("click", async () => {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        searchStatus.textContent = "Mencari...";
+        searchResults.style.display = "none";
+        searchResults.innerHTML = "";
+        pinSection.style.display = "none";
+
+        try {
+          const response = await fetch(
+            `/api/search-business?q=${encodeURIComponent(query)}`,
+          );
+          const data = await response.json();
+
+          // Jika server mengirim error, tampilkan pesan aslinya
+          if (!response.ok || !Array.isArray(data)) {
+            searchStatus.textContent =
+              "Error: " + (data.error || "gagal mencari bisnis");
+            return;
+          }
+
+          if (data.length === 0) {
+            searchStatus.textContent = "Bisnis tidak ditemukan.";
+            return;
+          }
+
+          searchStatus.textContent = `Ditemukan ${data.length} hasil:`;
+          searchResults.style.display = "block";
+
+          data.forEach((place) => {
+            const li = document.createElement("li");
+            li.className = "result-item";
+            const strong = document.createElement("strong");
+            strong.textContent = place.name;
+            const small = document.createElement("small");
+            small.style.color = "#666";
+            small.textContent = place.address;
+            li.append(strong, document.createElement("br"), small);
+
+            li.addEventListener("click", () => {
+              inputPlaceId.value = place.place_id;
+              inputName.value = place.name;
+              inputAddress.value = place.address;
+
+              selectedDisplay.textContent = place.name + " - " + place.address;
+              selectedContainer.style.display = "block";
+
+              searchResults.style.display = "none";
+              searchStatus.textContent = "";
+
+              // [BARU] Munculkan input PIN setelah bisnis dipilih
+              pinSection.style.display = "block";
+              errorMsg.style.display = "none";
+            });
+
+            searchResults.appendChild(li);
+          });
+        } catch (error) {
+          searchStatus.textContent = "Terjadi kesalahan saat mencari data.";
+        }
+      });
+
+      // [BARU] Logika ketika tombol AKTIVASI ditekan
+      btnActivate.addEventListener("click", async () => {
+        const pin = inputPin.value;
+
+        if (pin.length !== 4) {
+          errorMsg.textContent = "PIN harus 4 digit angka!";
+          errorMsg.style.display = "block";
+          return;
+        }
+
+        btnActivate.disabled = true;
+        btnActivate.textContent = "MEMPROSES...";
+        errorMsg.style.display = "none";
+
+        try {
+          const response = await fetch(`/api/cards/${cardCode}/activate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              place_id: inputPlaceId.value,
+              business_name: inputName.value,
+              address: inputAddress.value,
+              pin: pin,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            alert("Aktivasi Berhasil! Anda akan dialihkan ke Halaman Review.");
+            // Refresh halaman, server akan otomatis menampilkan Halaman Review karena status sudah ACTIVE
+            window.location.reload();
+          } else {
+            errorMsg.textContent = data.message;
+            errorMsg.style.display = "block";
+            btnActivate.disabled = false;
+            btnActivate.textContent = "AKTIVASI KARTU";
+          }
+        } catch (err) {
+          errorMsg.textContent = "Terjadi kesalahan sistem.";
+          errorMsg.style.display = "block";
+          btnActivate.disabled = false;
+          btnActivate.textContent = "AKTIVASI KARTU";
+        }
+      });
+    </script>
+  </body>
+</html>
