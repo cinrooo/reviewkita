@@ -137,19 +137,21 @@ app.get("/admin", requireAdmin, (req, res) => {
 });
 
 // 5. Endpoint Ambil Data Kartu untuk Dashboard
-app.get("/api/admin/cards", requireAdmin, (req, res) => {
+app.get("/api/admin/cards", requireAdmin, async (req, res) => {
   // Ambil semua kartu, lalu gabungkan (JOIN) dengan nama bisnisnya jika sudah ada
-  const cards = db
-    .prepare(
+  try {
+    const cards = await db.all(
       `
         SELECT cards.id, cards.card_code, cards.status, cards.activated_at, businesses.business_name 
         FROM cards 
         LEFT JOIN businesses ON cards.business_id = businesses.id
         ORDER BY cards.id DESC
-    `,
-    )
-    .all();
-  res.json(cards);
+      `
+    );
+    res.json(cards);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ==========================================
@@ -227,8 +229,7 @@ app.post("/api/cards/:cardCode/activate", async (req, res) => {
       .status(400)
       .json({ success: false, message: "Data belum lengkap!" });
 
-  const stmtCard = db.prepare("SELECT * FROM cards WHERE card_code = ?");
-  const card = stmtCard.get(cardCode);
+  const card = await db.get("SELECT * FROM cards WHERE card_code = ?", [cardCode]);
 
   if (!card)
     return res
@@ -243,24 +244,22 @@ app.post("/api/cards/:cardCode/activate", async (req, res) => {
   if (!isMatch)
     return res.status(401).json({ success: false, message: "PIN Salah!" });
 
-  const stmtInsert = db.prepare(
+  const info = await db.run(
     "INSERT INTO businesses (google_place_id, business_name, address) VALUES (?, ?, ?)",
+    [place_id, business_name, address]
   );
-  const info = stmtInsert.run(place_id, business_name, address);
 
-  const stmtUpdate = db.prepare(
+  await db.run(
     `UPDATE cards SET status = 'ACTIVE', business_id = ?, activated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+    [info.lastInsertRowid, card.id]
   );
-  stmtUpdate.run(info.lastInsertRowid, card.id);
 
   res.json({ success: true, message: "Aktivasi berhasil!" });
 });
 
-app.get("/card/:cardCode", (req, res) => {
+app.get("/card/:cardCode", async (req, res) => {
   const cardCode = req.params.cardCode;
-  const card = db
-    .prepare("SELECT * FROM cards WHERE card_code = ?")
-    .get(cardCode);
+  const card = await db.get("SELECT * FROM cards WHERE card_code = ?", [cardCode]);
 
   if (!card)
     return res
@@ -272,9 +271,7 @@ app.get("/card/:cardCode", (req, res) => {
   if (card.status === "READY") {
     return res.sendFile(path.join(__dirname, "views", "activation.html"));
   } else if (card.status === "ACTIVE") {
-    const business = db
-      .prepare("SELECT * FROM businesses WHERE id = ?")
-      .get(card.business_id);
+    const business = await db.get("SELECT * FROM businesses WHERE id = ?", [card.business_id]);
     const reviewUrl = `https://search.google.com/local/writereview?placeid=${business.google_place_id}`;
     let html = fs.readFileSync(
       path.join(__dirname, "views", "review.html"),
@@ -297,62 +294,77 @@ app.get("/card/:cardCode", (req, res) => {
 // ==========================================
 // [BARU] Endpoint Ekspor CSV Data Kartu
 // ==========================================
-app.get("/api/admin/export-csv", requireAdmin, (req, res) => {
-  const cards = db
-    .prepare(
+app.get("/api/admin/export-csv", requireAdmin, async (req, res) => {
+  try {
+    const cards = await db.all(
       `
       SELECT cards.id, cards.card_code, cards.status, cards.activated_at, cards.created_at, businesses.business_name, businesses.address
       FROM cards
       LEFT JOIN businesses ON cards.business_id = businesses.id
       ORDER BY cards.id DESC
-    `,
-    )
-    .all();
+      `
+    );
 
-  let csv = "ID,Kode Kartu,Status,Nama Bisnis,Alamat,Tanggal Aktivasi,Tanggal Dibuat\n";
-  cards.forEach((c) => {
-    csv += `${c.id},"${c.card_code}","${c.status}","${c.business_name || ""}","${(c.address || "").replace(/"/g, '""')}","${c.activated_at || ""}","${c.created_at || ""}"\n`;
-  });
+    let csv = "ID,Kode Kartu,Status,Nama Bisnis,Alamat,Tanggal Aktivasi,Tanggal Dibuat\n";
+    cards.forEach((c) => {
+      csv += `${c.id},"${c.card_code}","${c.status}","${c.business_name || ""}","${(c.address || "").replace(/"/g, '""')}","${c.activated_at || ""}","${c.created_at || ""}"\n`;
+    });
 
-  res.setHeader("Content-Type", "text/csv; charset=utf-8");
-  res.setHeader("Content-Disposition", "attachment; filename=reviewkita-cards.csv");
-  res.send(csv);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=reviewkita-cards.csv");
+    res.send(csv);
+  } catch (err) {
+    res.status(500).send("Error mengekspor CSV");
+  }
 });
 
 // ==========================================
 // [BARU] Endpoint Hapus Kartu (Admin)
 // ==========================================
-app.delete("/api/admin/cards/:id", requireAdmin, (req, res) => {
+app.delete("/api/admin/cards/:id", requireAdmin, async (req, res) => {
   const cardId = req.params.id;
-  const card = db.prepare("SELECT * FROM cards WHERE id = ?").get(cardId);
+  try {
+    const card = await db.get("SELECT * FROM cards WHERE id = ?", [cardId]);
 
-  if (!card) {
-    return res.status(404).json({ success: false, message: "Kartu tidak ditemukan" });
+    if (!card) {
+      return res.status(404).json({ success: false, message: "Kartu tidak ditemukan" });
+    }
+
+    // Hapus file QR jika ada
+    const qrPath = path.join(__dirname, "public", "qrcodes", `${card.card_code}.png`);
+    if (fs.existsSync(qrPath)) {
+      fs.unlinkSync(qrPath);
+    }
+
+    // Hapus bisnis terkait jika ada
+    if (card.business_id) {
+      await db.run("DELETE FROM businesses WHERE id = ?", [card.business_id]);
+    }
+
+    await db.run("DELETE FROM cards WHERE id = ?", [cardId]);
+    res.json({ success: true, message: "Kartu berhasil dihapus" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server Error" });
   }
-
-  // Hapus file QR jika ada
-  const qrPath = path.join(__dirname, "public", "qrcodes", `${card.card_code}.png`);
-  if (fs.existsSync(qrPath)) {
-    fs.unlinkSync(qrPath);
-  }
-
-  // Hapus bisnis terkait jika ada
-  if (card.business_id) {
-    db.prepare("DELETE FROM businesses WHERE id = ?").run(card.business_id);
-  }
-
-  db.prepare("DELETE FROM cards WHERE id = ?").run(cardId);
-  res.json({ success: true, message: "Kartu berhasil dihapus" });
 });
 
 // ==========================================
 // [BARU] Endpoint Statistik Dashboard
 // ==========================================
-app.get("/api/admin/stats", requireAdmin, (req, res) => {
-  const total = db.prepare("SELECT COUNT(*) as count FROM cards").get().count;
-  const ready = db.prepare("SELECT COUNT(*) as count FROM cards WHERE status = 'READY'").get().count;
-  const active = db.prepare("SELECT COUNT(*) as count FROM cards WHERE status = 'ACTIVE'").get().count;
-  res.json({ total, ready, active });
+app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+  try {
+    const totalResult = await db.get("SELECT COUNT(*) as count FROM cards");
+    const readyResult = await db.get("SELECT COUNT(*) as count FROM cards WHERE status = 'READY'");
+    const activeResult = await db.get("SELECT COUNT(*) as count FROM cards WHERE status = 'ACTIVE'");
+    
+    res.json({ 
+      total: totalResult.count, 
+      ready: readyResult.count, 
+      active: activeResult.count 
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Server Error" });
+  }
 });
 
 app.listen(PORT, () => {
