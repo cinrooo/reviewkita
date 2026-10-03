@@ -26,27 +26,24 @@ function generatePIN() {
   return String(Math.floor(Math.random() * 10000)).padStart(4, "0");
 }
 
-// JUMLAH KARTU YANG INGIN DIBUAT (Kita coba 10 dulu)
-const JUMLAH_KARTU = 10;
+// Ambil jumlah kartu dari argumen, default 10
+const args = process.argv.slice(2);
+const amountArg = args[0] ? parseInt(args[0]) : 10;
+const JUMLAH_KARTU = isNaN(amountArg) ? 10 : amountArg;
+
 const BASE_URL = (process.env.BASE_URL || "http://localhost:3000").replace(/\/+$/, "") + "/card/";
 
 console.log(`Memulai proses pencetakan ${JUMLAH_KARTU} kartu baru...`);
 console.log(`--------------------------------------------------`);
 
-const insertCard = db.prepare(`
-  INSERT INTO cards (card_code, activation_pin_hash, status) 
-  VALUES (?, ?, 'READY')
-`);
+for (let i = 0; i < JUMLAH_KARTU; i++) {
+  const code = generateCardCode();
+  const pin = generatePIN();
+  const hashedPin = bcrypt.hashSync(pin, 10);
 
-// Kita gunakan db.transaction agar proses simpan banyak data jauh lebih cepat
-const generateAll = db.transaction(() => {
-  for (let i = 0; i < JUMLAH_KARTU; i++) {
-    const code = generateCardCode();
-    const pin = generatePIN();
-    const hashedPin = bcrypt.hashSync(pin, 10);
-
-    // 1. Simpan ke Database
-    insertCard.run(code, hashedPin);
+  // 1. Simpan ke Database
+  if (db.addCard(code)) {
+    db.updateCardPin(code, hashedPin);
 
     // 2. Buat file Gambar QR Code (.png)
     const cardUrl = BASE_URL + code;
@@ -56,7 +53,7 @@ const generateAll = db.transaction(() => {
       filePath,
       cardUrl,
       {
-        width: 300, // Ukuran gambar 300x300 pixel
+        width: 300,
         margin: 2,
       },
       function (err) {
@@ -66,11 +63,10 @@ const generateAll = db.transaction(() => {
 
     // 3. Tampilkan di terminal (Nanti data ini yang diserahkan ke percetakan)
     console.log(`${i + 1}. Kode Kartu: ${code} | PIN Aktivasi: ${pin}`);
+  } else {
+    console.log(`${i + 1}. [SKIP] Kartu sudah ada: ${code}`);
   }
-});
-
-// Jalankan prosesnya
-generateAll();
+}
 
 console.log(`--------------------------------------------------`);
 console.log(`Selesai! Database telah diperbarui.`);
