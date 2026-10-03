@@ -21,12 +21,20 @@ try {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// [BARU] Pengaturan Session (Login)
+// Diperlukan agar session & cookie berjalan di balik reverse proxy cPanel/Nginx
+app.set("trust proxy", 1);
+
+// Pengaturan Session (Login)
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "rahasia",
-    resave: false,
+    secret: process.env.SESSION_SECRET || "reviewkita_secret_default",
+    resave: true,
     saveUninitialized: false,
+    cookie: {
+      secure: false, // set true jika sudah pakai HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 jam
+    },
   }),
 );
 
@@ -75,15 +83,26 @@ app.get("/admin/login", (req, res) => {
 
 // 2. Proses Data Login
 app.post("/admin/login", (req, res) => {
-  const { username, password } = req.body;
-  if (
-    username === process.env.ADMIN_USER &&
-    password === process.env.ADMIN_PASS
-  ) {
-    req.session.isAdmin = true; // Simpan sesi login
-    return res.redirect("/admin");
+  // .trim() mencegah masalah spasi tersembunyi di nilai .env (khususnya di cPanel)
+  const username = (req.body.username || "").trim();
+  const password = (req.body.password || "").trim();
+  const adminUser = (process.env.ADMIN_USER || "").trim();
+  const adminPass = (process.env.ADMIN_PASS || "").trim();
+
+  if (username === adminUser && password === adminPass) {
+    req.session.isAdmin = true;
+    // session.save() memastikan sesi tersimpan SEBELUM redirect (penting di cPanel)
+    return req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.status(500).send("Session error, coba lagi.");
+      }
+      res.redirect("/admin");
+    });
   }
-  // Jika gagal, kembalikan ke login dengan pesan error javascript
+
+  // Jika gagal, log untuk debug lalu kembalikan ke login
+  console.log(`[LOGIN GAGAL] User: '${username}', Expected: '${adminUser}'`);
   res.send(
     '<script>alert("Username atau Password Salah!"); window.location.href="/admin/login";</script>',
   );
@@ -91,8 +110,9 @@ app.post("/admin/login", (req, res) => {
 
 // 3. Proses Logout
 app.get("/admin/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/admin/login");
+  req.session.destroy(() => {
+    res.redirect("/admin/login");
+  });
 });
 
 // 4. Halaman Dashboard Admin (Dilindungi middleware requireAdmin)
@@ -319,6 +339,15 @@ app.get("/api/admin/stats", requireAdmin, (req, res) => {
   res.json({ total, ready, active });
 });
 
-app.listen(PORT, () => {
-  console.log(`ReviewKita berjalan di http://localhost:${PORT}`);
-});
+// Jalankan server:
+// - Jika dijalankan langsung (node server.js / npm start): listen di PORT
+// - Jika diimpor oleh app.js (Phusion Passenger cPanel): ekspor app
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`ReviewKita berjalan di http://localhost:${PORT}`);
+    console.log(`Admin panel: http://localhost:${PORT}/admin`);
+  });
+} else {
+  // Untuk Phusion Passenger di cPanel
+  module.exports = app;
+}

@@ -28,7 +28,7 @@ function generatePIN() {
 
 // JUMLAH KARTU YANG INGIN DIBUAT (Kita coba 10 dulu)
 const JUMLAH_KARTU = 10;
-const BASE_URL = (process.env.BASE_URL || "http://localhost:3000") + "/card/";
+const BASE_URL = (process.env.BASE_URL || "http://localhost:3000").replace(/\/+$/, "") + "/card/";
 
 console.log(`Memulai proses pencetakan ${JUMLAH_KARTU} kartu baru...`);
 console.log(`--------------------------------------------------`);
