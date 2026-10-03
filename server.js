@@ -4,14 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const session = require("express-session"); // [BARU] Modul Session
-let db = null;
-let dbError = null;
-try {
-  db = require("./database/db");
-} catch (err) {
-  dbError = err.stack || err.message;
-  console.error("Gagal memuat database:", err);
-}
+const db = require("./database/db");
 
 let helmet, rateLimit;
 try {
@@ -26,14 +19,6 @@ try {
 }
 
 const app = express();
-
-// Middleware darurat untuk menampilkan error database langsung di halaman web
-app.use((req, res, next) => {
-  if (dbError) {
-    return res.status(500).type("text/plain").send("TERJADI ERROR FATAL SAAT MEMUAT DATABASE (better-sqlite3):\n\n" + dbError);
-  }
-  next();
-});
 
 const PORT = process.env.PORT || 3000;
 
@@ -138,16 +123,8 @@ app.get("/admin", requireAdmin, (req, res) => {
 
 // 5. Endpoint Ambil Data Kartu untuk Dashboard
 app.get("/api/admin/cards", requireAdmin, async (req, res) => {
-  // Ambil semua kartu, lalu gabungkan (JOIN) dengan nama bisnisnya jika sudah ada
   try {
-    const cards = await db.all(
-      `
-        SELECT cards.id, cards.card_code, cards.status, cards.activated_at, businesses.business_name 
-        FROM cards 
-        LEFT JOIN businesses ON cards.business_id = businesses.id
-        ORDER BY cards.id DESC
-      `
-    );
+    const cards = db.getAllCardsWithBusiness();
     res.json(cards);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -229,7 +206,7 @@ app.post("/api/cards/:cardCode/activate", async (req, res) => {
       .status(400)
       .json({ success: false, message: "Data belum lengkap!" });
 
-  const card = await db.get("SELECT * FROM cards WHERE card_code = ?", [cardCode]);
+  const card = db.getCardByCode(cardCode);
 
   if (!card)
     return res
@@ -244,22 +221,15 @@ app.post("/api/cards/:cardCode/activate", async (req, res) => {
   if (!isMatch)
     return res.status(401).json({ success: false, message: "PIN Salah!" });
 
-  const info = await db.run(
-    "INSERT INTO businesses (google_place_id, business_name, address) VALUES (?, ?, ?)",
-    [place_id, business_name, address]
-  );
-
-  await db.run(
-    `UPDATE cards SET status = 'ACTIVE', business_id = ?, activated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-    [info.lastInsertRowid, card.id]
-  );
+  const businessId = db.addBusiness(place_id, business_name, address);
+  db.activateCard(card.id, businessId);
 
   res.json({ success: true, message: "Aktivasi berhasil!" });
 });
 
 app.get("/card/:cardCode", async (req, res) => {
   const cardCode = req.params.cardCode;
-  const card = await db.get("SELECT * FROM cards WHERE card_code = ?", [cardCode]);
+  const card = db.getCardByCode(cardCode);
 
   if (!card)
     return res
@@ -271,7 +241,7 @@ app.get("/card/:cardCode", async (req, res) => {
   if (card.status === "READY") {
     return res.sendFile(path.join(__dirname, "views", "activation.html"));
   } else if (card.status === "ACTIVE") {
-    const business = await db.get("SELECT * FROM businesses WHERE id = ?", [card.business_id]);
+    const business = db.getBusinessById(card.business_id);
     const reviewUrl = `https://search.google.com/local/writereview?placeid=${business.google_place_id}`;
     let html = fs.readFileSync(
       path.join(__dirname, "views", "review.html"),
@@ -296,14 +266,7 @@ app.get("/card/:cardCode", async (req, res) => {
 // ==========================================
 app.get("/api/admin/export-csv", requireAdmin, async (req, res) => {
   try {
-    const cards = await db.all(
-      `
-      SELECT cards.id, cards.card_code, cards.status, cards.activated_at, cards.created_at, businesses.business_name, businesses.address
-      FROM cards
-      LEFT JOIN businesses ON cards.business_id = businesses.id
-      ORDER BY cards.id DESC
-      `
-    );
+    const cards = db.getAllCardsWithBusiness();
 
     let csv = "ID,Kode Kartu,Status,Nama Bisnis,Alamat,Tanggal Aktivasi,Tanggal Dibuat\n";
     cards.forEach((c) => {
@@ -324,7 +287,7 @@ app.get("/api/admin/export-csv", requireAdmin, async (req, res) => {
 app.delete("/api/admin/cards/:id", requireAdmin, async (req, res) => {
   const cardId = req.params.id;
   try {
-    const card = await db.get("SELECT * FROM cards WHERE id = ?", [cardId]);
+    const card = db.deleteCard(cardId);
 
     if (!card) {
       return res.status(404).json({ success: false, message: "Kartu tidak ditemukan" });
@@ -336,12 +299,6 @@ app.delete("/api/admin/cards/:id", requireAdmin, async (req, res) => {
       fs.unlinkSync(qrPath);
     }
 
-    // Hapus bisnis terkait jika ada
-    if (card.business_id) {
-      await db.run("DELETE FROM businesses WHERE id = ?", [card.business_id]);
-    }
-
-    await db.run("DELETE FROM cards WHERE id = ?", [cardId]);
     res.json({ success: true, message: "Kartu berhasil dihapus" });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -353,15 +310,8 @@ app.delete("/api/admin/cards/:id", requireAdmin, async (req, res) => {
 // ==========================================
 app.get("/api/admin/stats", requireAdmin, async (req, res) => {
   try {
-    const totalResult = await db.get("SELECT COUNT(*) as count FROM cards");
-    const readyResult = await db.get("SELECT COUNT(*) as count FROM cards WHERE status = 'READY'");
-    const activeResult = await db.get("SELECT COUNT(*) as count FROM cards WHERE status = 'ACTIVE'");
-    
-    res.json({ 
-      total: totalResult.count, 
-      ready: readyResult.count, 
-      active: activeResult.count 
-    });
+    const stats = db.getStats();
+    res.json(stats);
   } catch (err) {
     res.status(500).json({ error: "Server Error" });
   }
