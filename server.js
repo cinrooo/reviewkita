@@ -339,15 +339,8 @@ app.get("/api/admin/stats", requireAdmin, (req, res) => {
   res.json({ total, ready, active });
 });
 
-// Jalankan server:
-// - Jika dijalankan langsung (node server.js / npm start): listen di PORT
-// - Jika diimpor oleh app.js (Phusion Passenger cPanel): ekspor app
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`ReviewKita berjalan di http://localhost:${PORT}`);
-    console.log(`Admin panel: http://localhost:${PORT}/admin`);
-  });
-} else {
-  // Untuk Phusion Passenger di cPanel
-  module.exports = app;
-}
+app.listen(PORT, () => {
+  console.log(`ReviewKita berjalan di http://localhost:${PORT}`);
+  console.log(`Admin panel: http://localhost:${PORT}/admin`);
+});
+
