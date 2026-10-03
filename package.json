@@ -9,7 +9,6 @@
     "generate": "node database/generator.js",
     "reset-cards": "node database/reset-cards.js",
     "seed": "node database/seed.js",
-    "postinstall": "npm rebuild better-sqlite3",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
