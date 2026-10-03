@@ -243,15 +243,7 @@ app.get("/card/:cardCode", async (req, res) => {
   } else if (card.status === "ACTIVE") {
     const business = db.getBusinessById(card.business_id);
     const reviewUrl = `https://search.google.com/local/writereview?placeid=${business.google_place_id}`;
-    let html = fs.readFileSync(
-      path.join(__dirname, "views", "review.html"),
-      "utf-8",
-    );
-    html = html
-      .replace("{{BUSINESS_NAME}}", business.business_name)
-      .replace("{{BUSINESS_ADDRESS}}", business.address)
-      .replace("{{REVIEW_URL}}", reviewUrl);
-    return res.send(html);
+    return res.redirect(reviewUrl);
   } else {
     return res
       .status(403)
