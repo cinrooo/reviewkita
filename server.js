@@ -4,7 +4,14 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const session = require("express-session"); // [BARU] Modul Session
-const db = require("./database/db");
+let db = null;
+let dbError = null;
+try {
+  db = require("./database/db");
+} catch (err) {
+  dbError = err.stack || err.message;
+  console.error("Gagal memuat database:", err);
+}
 
 let helmet, rateLimit;
 try {
@@ -19,6 +26,15 @@ try {
 }
 
 const app = express();
+
+// Middleware darurat untuk menampilkan error database langsung di halaman web
+app.use((req, res, next) => {
+  if (dbError) {
+    return res.status(500).type("text/plain").send("TERJADI ERROR FATAL SAAT MEMUAT DATABASE (better-sqlite3):\n\n" + dbError);
+  }
+  next();
+});
+
 const PORT = process.env.PORT || 3000;
 
 // Diperlukan agar session & cookie berjalan di balik reverse proxy cPanel/Nginx
