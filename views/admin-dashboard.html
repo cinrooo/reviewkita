@@ -211,11 +211,67 @@
       }
 
       .card-code {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         font-weight: 700;
         color: #e2e8f0;
         font-family: 'Courier New', monospace;
         font-size: 13px;
         letter-spacing: 0.5px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+      .card-code:hover {
+        background: rgba(99, 102, 241, 0.18);
+        border-color: rgba(99, 102, 241, 0.45);
+        color: #a5b4fc;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+      }
+      .card-code:active {
+        transform: scale(0.96);
+      }
+      .card-code .qr-icon {
+        font-size: 11px;
+        opacity: 0.5;
+        transition: opacity 0.2s ease;
+      }
+      .card-code:hover .qr-icon {
+        opacity: 1;
+      }
+
+      /* Floating Toast Notification */
+      .toast-notification {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        color: #f8fafc;
+        padding: 12px 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10000;
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(10px);
+      }
+      .toast-notification.show {
+        transform: translateY(0);
+        opacity: 1;
       }
 
       .status-badge {
@@ -450,7 +506,15 @@
 
           tr.innerHTML = `
             <td>${card.id}</td>
-            <td><span class="card-code">${card.card_code}</span></td>
+            <td>
+              <span class="card-code" 
+                    title="Double tap / double klik untuk download QR Code" 
+                    ondblclick="downloadQr('${card.card_code}')"
+                    ontouchend="handleCardTap(event, '${card.card_code}')">
+                ${card.card_code}
+                <span class="qr-icon" title="Unduh QR">📥</span>
+              </span>
+            </td>
             <td>${statusBadge}</td>
             <td>${bizCell}</td>
             <td>
@@ -542,6 +606,50 @@
           btn.disabled = false;
           btn.innerText = '🚀 Cetak Kartu';
         }
+      }
+
+      // QR Download on Double Click / Double Tap
+      let lastTapTime = 0;
+      let lastTapCode = '';
+      function handleCardTap(e, code) {
+        const now = Date.now();
+        if (lastTapCode === code && (now - lastTapTime) < 400 && (now - lastTapTime) > 40) {
+          e.preventDefault();
+          downloadQr(code);
+          lastTapTime = 0;
+          lastTapCode = '';
+        } else {
+          lastTapTime = now;
+          lastTapCode = code;
+        }
+      }
+
+      function downloadQr(code) {
+        const qrUrl = `/qrcodes/${code}.png`;
+        const link = document.createElement('a');
+        link.href = qrUrl;
+        link.download = `QR-${code}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast(`📥 Mengunduh QR Code: <b>${code}</b>`);
+      }
+
+      function showToast(msg) {
+        let toast = document.getElementById('toast-msg');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'toast-msg';
+          toast.className = 'toast-notification';
+          document.body.appendChild(toast);
+        }
+        toast.innerHTML = msg;
+        toast.classList.add('show');
+        clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
       }
 
       // Init
