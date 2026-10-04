@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
+const QRCode = require("qrcode");
 const session = require("express-session"); // [BARU] Modul Session
 const db = require("./database/db");
 
@@ -130,6 +131,41 @@ app.get("/api/admin/cards", requireAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// [BARU] Endpoint Generate Kartu Baru dari Dashboard Admin
+app.post("/api/admin/cards/generate", requireAdmin, async (req, res) => {
+  try {
+    const amount = Math.min(Math.max(parseInt(req.body.count) || 5, 1), 50);
+    const generated = [];
+    const qrFolder = path.join(__dirname, "public", "qrcodes");
+    if (!fs.existsSync(qrFolder)) fs.mkdirSync(qrFolder, { recursive: true });
+    const BASE_URL = (process.env.BASE_URL || "https://reviewkita.my.id").replace(/\/+$/, "") + "/card/";
+
+    for (let i = 0; i < amount; i++) {
+      let code = "RV-";
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      for (let j = 0; j < 8; j++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+      const pin = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+      const hashedPin = bcrypt.hashSync(pin, 10);
+
+      if (db.addCard(code)) {
+        db.updateCardPin(code, hashedPin);
+        const cardUrl = BASE_URL + code;
+        const filePath = path.join(qrFolder, `${code}.png`);
+        try {
+          await QRCode.toFile(filePath, cardUrl, { width: 300, margin: 2 });
+        } catch (e) {
+          console.error("QR Error:", e);
+        }
+        generated.push({ code, pin, qrUrl: `/qrcodes/${code}.png` });
+      }
+    }
+    res.json({ success: true, count: generated.length, cards: generated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 
 // ==========================================
 // Rute Aktivasi dan Review (Sama seperti Phase sebelumnya)

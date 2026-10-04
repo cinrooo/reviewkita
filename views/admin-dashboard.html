@@ -322,6 +322,7 @@
           <span class="badge">ADMIN</span>
         </div>
         <div class="header-actions">
+          <button onclick="openGenerateModal()" class="btn-sm" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4); cursor: pointer; padding: 7px 14px; font-weight: 600;">➕ Buat Kartu Baru</button>
           <a href="/api/admin/export-csv" class="btn-sm btn-success">📥 Ekspor CSV</a>
           <a href="/admin/logout" class="btn-sm btn-logout">Logout</a>
         </div>
@@ -491,9 +492,86 @@
         renderCards(filtered);
       });
 
+      // Generate Modal functions
+      function openGenerateModal() {
+        document.getElementById('generateModal').style.display = 'flex';
+        document.getElementById('genResult').style.display = 'none';
+        document.getElementById('genResult').innerHTML = '';
+        const btn = document.getElementById('btnDoGenerate');
+        btn.style.display = 'inline-block';
+        btn.disabled = false;
+        btn.innerText = '🚀 Cetak Kartu';
+      }
+
+      function closeGenerateModal() {
+        document.getElementById('generateModal').style.display = 'none';
+      }
+
+      async function submitGenerateCards() {
+        const count = parseInt(document.getElementById('genCount').value) || 5;
+        const btn = document.getElementById('btnDoGenerate');
+        btn.disabled = true;
+        btn.innerText = 'Memproses...';
+
+        try {
+          const res = await fetch('/api/admin/cards/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ count })
+          });
+          const data = await res.json();
+          if (data.success) {
+            let html = `<strong>🎉 Berhasil membuat ${data.count} kartu baru!</strong><br><br>`;
+            data.cards.forEach((c, idx) => {
+              html += `${idx+1}. Kode: <b>${c.code}</b> | PIN: <span style="color:#fbbf24; font-weight:bold;">${c.pin}</span><br>`;
+            });
+            const resultBox = document.getElementById('genResult');
+            resultBox.innerHTML = html;
+            resultBox.style.display = 'block';
+            btn.style.display = 'none';
+
+            fetchCards();
+            fetchStats();
+          } else {
+            alert('Gagal: ' + (data.error || 'Terjadi kesalahan'));
+            btn.disabled = false;
+            btn.innerText = '🚀 Cetak Kartu';
+          }
+        } catch (e) {
+          alert('Error menghubungi server');
+          btn.disabled = false;
+          btn.innerText = '🚀 Cetak Kartu';
+        }
+      }
+
       // Init
       fetchStats();
       fetchCards();
     </script>
+
+    <!-- Modal Generate Kartu -->
+    <div id="generateModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+      <div style="background:#1e293b; border:1px solid rgba(255,255,255,0.12); border-radius:16px; max-width:480px; width:100%; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.5); color:#f8fafc;">
+        <h3 style="margin-top:0; font-size:18px; display:flex; align-items:center; gap:8px;">✨ Buat Kartu Baru</h3>
+        <p style="color:#94a3b8; font-size:13px; margin-bottom:16px;">Tentukan berapa banyak kartu yang ingin dicetak langsung ke sistem.</p>
+        
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#cbd5e1; display:block; margin-bottom:6px;">Jumlah Kartu:</label>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn-sm btn-outline" onclick="document.getElementById('genCount').value=5">5</button>
+            <button type="button" class="btn-sm btn-outline" onclick="document.getElementById('genCount').value=10">10</button>
+            <button type="button" class="btn-sm btn-outline" onclick="document.getElementById('genCount').value=20">20</button>
+            <input type="number" id="genCount" value="5" min="1" max="50" style="flex:1; padding:8px 12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:white; font-size:14px;" />
+          </div>
+        </div>
+
+        <div id="genResult" style="display:none; margin-bottom:16px; max-height:200px; overflow-y:auto; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:8px; font-size:13px; line-height:1.6;"></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn-sm btn-outline" onclick="closeGenerateModal()">Tutup</button>
+          <button type="button" id="btnDoGenerate" class="btn-sm" style="background:linear-gradient(135deg, #6366f1, #4f46e5); color:white; border:none; padding:8px 18px; font-weight:600; cursor:pointer;" onclick="submitGenerateCards()">🚀 Cetak Kartu</button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
