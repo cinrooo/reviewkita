@@ -45,8 +45,98 @@
       "business_id": null,
       "activated_at": null,
       "created_at": "2026-10-03T10:15:35.269Z"
+    },
+    {
+      "id": 6,
+      "card_code": "RV-LBQE4O2D",
+      "activation_pin_hash": "$2b$10$.gZkyJq5SwKSdv9AjmcS6.fQ.otf3qXKqjS7uzgzm1YowOh0vmS42",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.024Z"
+    },
+    {
+      "id": 7,
+      "card_code": "RV-P5R8FQR7",
+      "activation_pin_hash": "$2b$10$ZVLhoyth0NoHQLUAfPeOuOYEPHDyHRnLrtxE0od50WC0my3zJTbXS",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.148Z"
+    },
+    {
+      "id": 8,
+      "card_code": "RV-0RYUFTGC",
+      "activation_pin_hash": "$2b$10$OmOKqiiP7PAyeipeVUvjku2NNCDOh2ZYE0MbUX/9bQVAO4DVUiK32",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.248Z"
+    },
+    {
+      "id": 9,
+      "card_code": "RV-OTB21WRH",
+      "activation_pin_hash": "$2b$10$PKNzUxe46g06tSDYogUfzeoDpL3iphyFB/e0F32hihQenWyeudyjW",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.350Z"
+    },
+    {
+      "id": 10,
+      "card_code": "RV-OPF97SNL",
+      "activation_pin_hash": "$2b$10$7GRWAKvUq4UTWyr5RfoJKOa5mEdcaaTT3Rbe1rYErTTR2JNEMQIwy",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.455Z"
+    },
+    {
+      "id": 11,
+      "card_code": "RV-PMFT04IH",
+      "activation_pin_hash": "$2b$10$PTfKiXnvD0cOYlJ0kkIPb.vEpecdGk/gDCBSVPmfWoQLJCoQ.nMdS",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.552Z"
+    },
+    {
+      "id": 12,
+      "card_code": "RV-CV1FL3NI",
+      "activation_pin_hash": "$2b$10$r7Nrx8vfdOex74ogtzOPQ.notRC6UvgIRifS6paNOXoB/24.fzzSG",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.670Z"
+    },
+    {
+      "id": 13,
+      "card_code": "RV-NF17WY9T",
+      "activation_pin_hash": "$2b$10$vFiDd4Z7Xfse4vsM1RXp1ePjD33pFXhoDNe1WDuLh2tINDN.bW6yO",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.809Z"
+    },
+    {
+      "id": 14,
+      "card_code": "RV-4GAHAC1F",
+      "activation_pin_hash": "$2b$10$oDk/Ua5TaLv4hVuhxmGTleZXDqT24n8By6GyjW3YNVrOeAGtcSrUS",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:27.959Z"
+    },
+    {
+      "id": 15,
+      "card_code": "RV-IGBUB6FX",
+      "activation_pin_hash": "$2b$10$ZuBZ21HPjtdtotwST05yQeKYx62tmxLN/bLwcfFHLvb2BA5wT0Eri",
+      "status": "READY",
+      "business_id": null,
+      "activated_at": null,
+      "created_at": "2026-10-04T02:34:28.084Z"
     }
   ],
   "nextBusinessId": 1,
-  "nextCardId": 6
+  "nextCardId": 16
 }

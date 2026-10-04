@@ -254,6 +254,32 @@ app.get("/card/:cardCode", async (req, res) => {
 });
 
 // ==========================================
+// [BARU] Endpoint Info Kartu (untuk halaman review)
+// ==========================================
+app.get("/api/cards/:cardCode/info", async (req, res) => {
+  const cardCode = req.params.cardCode;
+  const card = db.getCardByCode(cardCode);
+
+  if (!card || card.status !== "ACTIVE") {
+    return res.status(404).json({ success: false, message: "Kartu tidak ditemukan atau belum aktif" });
+  }
+
+  const business = db.getBusinessById(card.business_id);
+  if (!business) {
+    return res.status(404).json({ success: false, message: "Data bisnis tidak ditemukan" });
+  }
+
+  const reviewUrl = `https://search.google.com/local/writereview?placeid=${business.google_place_id}`;
+
+  res.json({
+    success: true,
+    business_name: business.business_name,
+    address: business.address,
+    review_url: reviewUrl,
+  });
+});
+
+// ==========================================
 // [BARU] Endpoint Ekspor CSV Data Kartu
 // ==========================================
 app.get("/api/admin/export-csv", requireAdmin, async (req, res) => {

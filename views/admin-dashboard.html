@@ -4,269 +4,484 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Admin - ReviewKita</title>
+    <meta name="description" content="Panel admin untuk mengelola kartu NFC ReviewKita." />
     <link rel="stylesheet" href="/style.css" />
     <style>
-      .dashboard-container {
-        max-width: 960px;
-        margin: 30px auto;
-        background: white;
-        padding: 24px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        text-align: left;
+      /* ============================
+         Admin Dashboard Overrides
+         ============================ */
+      body {
+        display: block;
+        padding: 0;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        min-height: 100vh;
       }
-      .header-dash {
+
+      body::before {
+        background-image:
+          radial-gradient(circle at 15% 50%, rgba(102, 126, 234, 0.12) 0%, transparent 50%),
+          radial-gradient(circle at 85% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+      }
+
+      .dashboard-container {
+        position: relative;
+        z-index: 1;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      /* Header Bar */
+      .header-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 12px;
       }
+      .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .header-brand .logo {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+      }
+      .header-brand h1 {
+        font-size: 22px;
+        background: linear-gradient(135deg, #667eea, #a78bfa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+      }
+      .header-brand .badge {
+        padding: 3px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(102, 126, 234, 0.15);
+        color: #818cf8;
+        border-radius: var(--radius-full);
+        letter-spacing: 0.5px;
+      }
+
       .header-actions {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
       }
+
+      /* Stat Cards Row */
       .stats-row {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
       }
       .stat-card {
-        flex: 1;
-        min-width: 120px;
-        padding: 15px;
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-md);
+        padding: 20px;
         text-align: center;
-        color: white;
-        font-weight: bold;
+        transition: all var(--transition-base);
+      }
+      .stat-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+      .stat-card .icon {
+        font-size: 28px;
+        margin-bottom: 8px;
       }
       .stat-card .number {
-        font-size: 28px;
+        font-size: 32px;
+        font-weight: 800;
         display: block;
+        line-height: 1.1;
       }
       .stat-card .label {
         font-size: 12px;
-        opacity: 0.9;
+        font-weight: 500;
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
-      .stat-total { background: #1a73e8; }
-      .stat-ready { background: #f0ad4e; }
-      .stat-active { background: #28a745; }
-      .search-bar {
-        margin-bottom: 15px;
+      .stat-total .number { color: #818cf8; }
+      .stat-total .label { color: #a5b4fc; }
+      .stat-ready .number { color: #fbbf24; }
+      .stat-ready .label { color: #fcd34d; }
+      .stat-active .number { color: #34d399; }
+      .stat-active .label { color: #6ee7b7; }
+
+      /* Data Panel */
+      .data-panel {
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
       }
-      .search-bar input {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
+
+      .panel-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .panel-header h2 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #e2e8f0;
+        margin: 0;
+        -webkit-text-fill-color: #e2e8f0;
+      }
+
+      .search-input {
+        flex: 1;
+        min-width: 200px;
+        max-width: 360px;
+        padding: 10px 14px 10px 36px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.06);
+        color: #e2e8f0;
         font-size: 14px;
-        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        transition: all var(--transition-fast);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.3-4.3'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: 12px center;
+      }
+      .search-input:focus {
+        border-color: rgba(129, 140, 248, 0.5);
+        box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+      }
+      .search-input::placeholder {
+        color: #64748b;
+      }
+
+      /* Table */
+      .table-wrap {
+        overflow-x: auto;
       }
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
-      }
-      th,
-      td {
-        padding: 10px 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-        font-size: 14px;
       }
       th {
-        background-color: #f4f4f4;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #64748b;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         position: sticky;
         top: 0;
       }
+      td {
+        padding: 14px 16px;
+        font-size: 14px;
+        color: #cbd5e1;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      tr {
+        transition: background var(--transition-fast);
+      }
+      tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .card-code {
+        font-weight: 700;
+        color: #e2e8f0;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: var(--radius-full);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
       .status-ready {
-        background: #ffeeba;
-        color: #856404;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: bold;
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
       }
       .status-active {
-        background: #d4edda;
-        color: #155724;
-        padding: 4px 8px;
-        border-radius: 4px;
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+      }
+
+      .biz-name {
+        font-weight: 500;
+        color: #e2e8f0;
+      }
+      .biz-empty {
+        color: #475569;
+        font-style: italic;
+        font-size: 13px;
+      }
+
+      /* Action Buttons */
+      .btn-sm {
+        padding: 6px 12px;
         font-size: 12px;
-        font-weight: bold;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: all var(--transition-fast);
+      }
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+      }
+      .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+      }
+      .btn-outline {
+        background: rgba(255, 255, 255, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+      }
+      .btn-success {
+        background: linear-gradient(135deg, #059669, #047857);
+        color: white;
+        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+      }
+      .btn-success:hover {
+        box-shadow: 0 3px 10px rgba(5, 150, 105, 0.4);
       }
       .btn-logout {
-        background: #dc3545;
-        color: white;
-        padding: 8px 15px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-size: 13px;
-        border: none;
-        cursor: pointer;
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.2);
       }
-      .btn-export {
-        background: #28a745;
-        color: white;
-        padding: 8px 15px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-size: 13px;
-        border: none;
-        cursor: pointer;
+      .btn-logout:hover {
+        background: rgba(239, 68, 68, 0.25);
       }
-      .btn-export:hover { background: #218838; }
-      .btn-delete {
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 4px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: #475569;
       }
-      .btn-delete:hover { background: #c82333; }
-      @media (max-width: 600px) {
-        .dashboard-container { margin: 10px; padding: 15px; }
-        th, td { padding: 6px 8px; font-size: 12px; }
+      .empty-state .empty-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-container { padding: 12px; }
+        th, td { padding: 10px 12px; font-size: 12px; }
+        .stats-row { grid-template-columns: 1fr 1fr; }
+      }
+      @media (max-width: 480px) {
+        .stats-row { grid-template-columns: 1fr; }
       }
     </style>
   </head>
-  <body style="display:block; padding: 0;">
+  <body>
     <div class="dashboard-container">
-      <div class="header-dash">
-        <h2 style="margin:0;">Dashboard Admin</h2>
+      <!-- Header -->
+      <div class="header-bar">
+        <div class="header-brand">
+          <div class="logo">📡</div>
+          <h1>ReviewKita</h1>
+          <span class="badge">ADMIN</span>
+        </div>
         <div class="header-actions">
-          <a href="/api/admin/export-csv" class="btn-export">📥 Ekspor CSV</a>
-          <a href="/admin/logout" class="btn-logout">Logout</a>
+          <a href="/api/admin/export-csv" class="btn-sm btn-success">📥 Ekspor CSV</a>
+          <a href="/admin/logout" class="btn-sm btn-logout">Logout</a>
         </div>
       </div>
 
-      <!-- Statistik -->
+      <!-- Stats -->
       <div class="stats-row">
         <div class="stat-card stat-total">
-          <span class="number" id="stat-total">-</span>
+          <div class="icon">📦</div>
+          <span class="number" id="stat-total">—</span>
           <span class="label">Total Kartu</span>
         </div>
         <div class="stat-card stat-ready">
-          <span class="number" id="stat-ready">-</span>
+          <div class="icon">⏳</div>
+          <span class="number" id="stat-ready">—</span>
           <span class="label">Belum Aktif</span>
         </div>
         <div class="stat-card stat-active">
-          <span class="number" id="stat-active">-</span>
+          <div class="icon">✅</div>
+          <span class="number" id="stat-active">—</span>
           <span class="label">Sudah Aktif</span>
         </div>
       </div>
 
-      <!-- Search -->
-      <div class="search-bar">
-        <input type="text" id="search-input" placeholder="🔍 Cari kode kartu atau nama bisnis..." />
-      </div>
+      <!-- Data Panel -->
+      <div class="data-panel">
+        <div class="panel-header">
+          <h2>Daftar Kartu NFC</h2>
+          <input type="text" id="search-input" class="search-input" placeholder="Cari kode kartu atau bisnis..." />
+        </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Kode Kartu</th>
-            <th>Status</th>
-            <th>Bisnis Terhubung</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="table-body">
-          <tr>
-            <td colspan="5" style="text-align: center">Memuat data...</td>
-          </tr>
-        </tbody>
-      </table>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Kode Kartu</th>
+                <th>Status</th>
+                <th>Bisnis Terhubung</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr>
+                <td colspan="5" class="empty-state">
+                  <div class="empty-icon">⏳</div>
+                  Memuat data...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <script>
       let allCards = [];
 
-      // Ambil statistik
+      // Fetch stats
       async function fetchStats() {
         try {
-          const res = await fetch("/api/admin/stats");
+          const res = await fetch('/api/admin/stats');
           const stats = await res.json();
-          document.getElementById("stat-total").textContent = stats.total;
-          document.getElementById("stat-ready").textContent = stats.ready;
-          document.getElementById("stat-active").textContent = stats.active;
+          animateNumber('stat-total', stats.total);
+          animateNumber('stat-ready', stats.ready);
+          animateNumber('stat-active', stats.active);
         } catch (e) {
-          console.error("Gagal memuat statistik", e);
+          console.error('Gagal memuat statistik', e);
         }
       }
 
-      // Ambil data kartu
+      // Animate number count-up
+      function animateNumber(id, target) {
+        const el = document.getElementById(id);
+        const duration = 600;
+        const start = performance.now();
+
+        function update(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(eased * target);
+          if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+      }
+
+      // Fetch cards
       async function fetchCards() {
         try {
-          const response = await fetch("/api/admin/cards");
+          const response = await fetch('/api/admin/cards');
           allCards = await response.json();
           renderCards(allCards);
         } catch (error) {
-          console.error("Gagal memuat data", error);
-          document.getElementById("table-body").innerHTML =
-            '<tr><td colspan="5" style="text-align: center">Gagal memuat data. Coba login ulang.</td></tr>';
+          console.error('Gagal memuat data', error);
+          document.getElementById('table-body').innerHTML =
+            '<tr><td colspan="5" class="empty-state"><div class="empty-icon">❌</div>Gagal memuat data. Coba login ulang.</td></tr>';
         }
       }
 
       function renderCards(cards) {
-        const tbody = document.getElementById("table-body");
-        tbody.innerHTML = "";
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
 
         if (!Array.isArray(cards) || cards.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="5" style="text-align: center">Belum ada kartu di database. Jalankan: node database/generator.js</td></tr>';
+            '<tr><td colspan="5" class="empty-state"><div class="empty-icon">📭</div>Belum ada kartu. Jalankan: <code>node database/generator.js</code></td></tr>';
           return;
         }
 
-        cards.forEach((card) => {
-          const tr = document.createElement("tr");
+        cards.forEach((card, index) => {
+          const tr = document.createElement('tr');
+          tr.style.animation = `fadeIn 0.3s ease ${index * 30}ms both`;
 
-          let statusBadge = "";
-          if (card.status === "READY")
-            statusBadge = '<span class="status-ready">READY</span>';
-          else if (card.status === "ACTIVE")
-            statusBadge = '<span class="status-active">ACTIVE</span>';
-          else statusBadge = `<span>${card.status}</span>`;
+          let statusBadge = '';
+          if (card.status === 'READY')
+            statusBadge = '<span class="status-badge status-ready">● READY</span>';
+          else if (card.status === 'ACTIVE')
+            statusBadge = '<span class="status-badge status-active">● ACTIVE</span>';
+          else statusBadge = `<span class="status-badge">${card.status}</span>`;
+
+          const bizCell = card.business_name
+            ? `<span class="biz-name">${card.business_name}</span>`
+            : '<span class="biz-empty">— Belum Aktif —</span>';
 
           tr.innerHTML = `
             <td>${card.id}</td>
-            <td><strong>${card.card_code}</strong></td>
+            <td><span class="card-code">${card.card_code}</span></td>
             <td>${statusBadge}</td>
-            <td>${card.business_name ? card.business_name : "<em>- Belum Aktif -</em>"}</td>
-            <td><button class="btn-delete" onclick="deleteCard(${card.id}, '${card.card_code}')">Hapus</button></td>
+            <td>${bizCell}</td>
+            <td>
+              <button class="btn-sm btn-danger" onclick="deleteCard(${card.id}, '${card.card_code}')">
+                🗑 Hapus
+              </button>
+            </td>
           `;
           tbody.appendChild(tr);
         });
       }
 
-      // Hapus kartu
+      // Delete card
       async function deleteCard(id, code) {
         if (!confirm(`Yakin ingin menghapus kartu ${code}?`)) return;
 
         try {
-          const res = await fetch(`/api/admin/cards/${id}`, { method: "DELETE" });
+          const res = await fetch(`/api/admin/cards/${id}`, { method: 'DELETE' });
           const data = await res.json();
           if (data.success) {
-            alert("Kartu berhasil dihapus!");
             fetchCards();
             fetchStats();
           } else {
-            alert("Gagal: " + data.message);
+            alert('Gagal: ' + data.message);
           }
         } catch (e) {
-          alert("Terjadi kesalahan saat menghapus.");
+          alert('Terjadi kesalahan saat menghapus.');
         }
       }
 
-      // Filter/cari
-      document.getElementById("search-input").addEventListener("input", function () {
+      // Search/filter
+      document.getElementById('search-input').addEventListener('input', function () {
         const q = this.value.toLowerCase();
         const filtered = allCards.filter(
           (c) =>
@@ -276,7 +491,7 @@
         renderCards(filtered);
       });
 
-      // Load data
+      // Init
       fetchStats();
       fetchCards();
     </script>

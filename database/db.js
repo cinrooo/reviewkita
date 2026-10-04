@@ -11,37 +11,69 @@ let data = {
   nextCardId: 1
 };
 
-// Load data jika ada
-if (fs.existsSync(dbPath)) {
-  try {
-    data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-  } catch (e) {
-    console.error("Gagal membaca data.json, menggunakan data kosong.");
+let lastMtime = 0;
+
+function reload() {
+  if (fs.existsSync(dbPath)) {
+    try {
+      const stat = fs.statSync(dbPath);
+      data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+      lastMtime = stat.mtimeMs;
+    } catch (e) {
+      console.error("Gagal membaca data.json:", e.message);
+    }
   }
 }
+
+function checkReload() {
+  try {
+    if (fs.existsSync(dbPath)) {
+      const stat = fs.statSync(dbPath);
+      if (stat.mtimeMs > lastMtime) {
+        reload();
+      }
+    }
+  } catch (e) {
+    // Ignore error
+  }
+}
+
+// Load data saat inisialisasi
+reload();
 
 // Simpan data
 function save() {
   fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+  try {
+    lastMtime = fs.statSync(dbPath).mtimeMs;
+  } catch (e) {}
 }
 
 module.exports = {
-  data,
+  get data() {
+    checkReload();
+    return data;
+  },
+  reload,
   save,
   
   getCardByCode(code) {
+    checkReload();
     return data.cards.find(c => c.card_code === code);
   },
   
   getCardById(id) {
+    checkReload();
     return data.cards.find(c => c.id === Number(id));
   },
   
   getBusinessById(id) {
+    checkReload();
     return data.businesses.find(b => b.id === Number(id));
   },
   
   addBusiness(placeId, name, address) {
+    checkReload();
     const id = data.nextBusinessId++;
     const business = {
       id,
@@ -56,6 +88,7 @@ module.exports = {
   },
   
   activateCard(cardId, businessId) {
+    checkReload();
     const card = this.getCardById(cardId);
     if (card) {
       card.status = 'ACTIVE';
@@ -66,6 +99,7 @@ module.exports = {
   },
   
   addCard(cardCode) {
+    checkReload();
     if (this.getCardByCode(cardCode)) return false;
     const id = data.nextCardId++;
     data.cards.push({
@@ -82,6 +116,7 @@ module.exports = {
   },
   
   updateCardPin(cardCode, pinHash) {
+    checkReload();
     const card = this.getCardByCode(cardCode);
     if (card) {
       card.activation_pin_hash = pinHash;
@@ -90,6 +125,7 @@ module.exports = {
   },
 
   getAllCardsWithBusiness() {
+    checkReload();
     return data.cards.map(c => {
       const b = c.business_id ? this.getBusinessById(c.business_id) : null;
       return {
@@ -101,6 +137,7 @@ module.exports = {
   },
   
   deleteCard(cardId) {
+    checkReload();
     const cardIndex = data.cards.findIndex(c => c.id === Number(cardId));
     if (cardIndex > -1) {
       const card = data.cards[cardIndex];
@@ -116,6 +153,7 @@ module.exports = {
   },
   
   getStats() {
+    checkReload();
     return {
       total: data.cards.length,
       ready: data.cards.filter(c => c.status === 'READY').length,

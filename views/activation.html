@@ -3,106 +3,372 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aktivasi Produk - ReviewKita</title>
+    <title>Aktivasi Kartu NFC - ReviewKita</title>
+    <meta name="description" content="Aktivasi kartu NFC ReviewKita Anda untuk mulai mengumpulkan ulasan Google dari pelanggan." />
     <link rel="stylesheet" href="/style.css" />
     <style>
-      .form-group {
+      /* ============================
+         Activation Page Styles
+         ============================ */
+      .logo-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.35);
+        animation: pulse-glow 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.35); }
+        50% { box-shadow: 0 4px 28px rgba(102, 126, 234, 0.55); }
+      }
+
+      .step-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
         margin: 20px 0;
+      }
+      .step-dot {
+        width: 32px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--neutral-200);
+        transition: all var(--transition-base);
+      }
+      .step-dot.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        width: 48px;
+      }
+      .step-dot.done {
+        background: var(--accent-500);
+      }
+
+      .card-code-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--neutral-100);
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--radius-full);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--neutral-700);
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+      }
+      .card-code-badge .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--warning-500);
+        animation: blink 1.5s ease-in-out infinite;
+      }
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+
+      .form-group {
+        margin: 16px 0;
         text-align: left;
+      }
+      .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--neutral-600);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       .form-input {
         width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-      .search-row {
-        display: flex;
-        gap: 10px;
-        margin-top: 5px;
-      }
-      .result-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        display: none;
-      }
-      .result-item {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
+        padding: 12px 14px;
+        border: 1.5px solid var(--neutral-200);
+        border-radius: var(--radius-sm);
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+        color: var(--neutral-800);
         background: white;
+        transition: all var(--transition-fast);
+        outline: none;
       }
-      .result-item:hover {
-        background: #f8f9fa;
+      .form-input:focus {
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
       }
-      .selected-box {
-        margin-top: 15px;
-        padding: 15px;
-        background: #d4edda;
-        color: #155724;
-        border-radius: 4px;
-        display: none;
-        border: 1px solid #c3e6cb;
+      .form-input::placeholder {
+        color: var(--neutral-400);
       }
 
-      /* [BARU] Styling untuk PIN dan Error */
-      .pin-box {
+      .search-row {
+        display: flex;
+        gap: 8px;
+      }
+      .search-row .form-input {
+        flex: 1;
+      }
+      .search-row .btn {
+        padding: 12px 18px;
+        flex-shrink: 0;
+      }
+
+      .result-list {
+        list-style: none;
+        margin-top: 8px;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--radius-sm);
+        display: none;
+        max-height: 240px;
+        overflow-y: auto;
+        background: white;
+      }
+      .result-item {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--neutral-100);
+        cursor: pointer;
+        transition: background var(--transition-fast);
+      }
+      .result-item:last-child {
+        border-bottom: none;
+      }
+      .result-item:hover {
+        background: var(--neutral-50);
+      }
+      .result-item strong {
+        display: block;
+        font-size: 14px;
+        color: var(--neutral-800);
+      }
+      .result-item small {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--neutral-500);
+      }
+
+      .selected-box {
+        margin-top: 12px;
+        padding: 14px;
+        background: linear-gradient(135deg, rgba(0, 200, 83, 0.08), rgba(0, 200, 83, 0.04));
+        border: 1px solid rgba(0, 200, 83, 0.25);
+        border-radius: var(--radius-sm);
+        display: none;
+        text-align: left;
+        animation: fadeIn 0.3s ease;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .selected-box .check-icon {
+        color: var(--accent-500);
+        font-weight: 700;
+      }
+      .selected-box .biz-name {
+        font-weight: 600;
+        color: var(--neutral-800);
+        font-size: 14px;
+      }
+      .selected-box .biz-address {
+        font-size: 12px;
+        color: var(--neutral-500);
+        margin-top: 2px;
+      }
+
+      .pin-section {
         margin-top: 20px;
         padding-top: 20px;
-        border-top: 1px solid #eee;
+        border-top: 1px solid var(--neutral-200);
         display: none;
+        animation: fadeIn 0.3s ease;
       }
-      #error-msg {
-        color: #dc3545;
-        font-size: 14px;
+
+      .pin-input {
+        text-align: center;
+        font-size: 28px !important;
+        font-weight: 700;
+        letter-spacing: 12px;
+        padding: 14px !important;
+      }
+
+      .btn-activate {
+        width: 100%;
+        background: linear-gradient(135deg, var(--accent-500), #009624);
+        padding: 14px 24px;
+        font-size: 16px;
+        font-weight: 700;
+        margin-top: 14px;
+        border-radius: var(--radius-sm);
+        box-shadow: 0 2px 8px rgba(0, 200, 83, 0.3);
+        letter-spacing: 0.5px;
+      }
+      .btn-activate:hover {
+        box-shadow: 0 4px 16px rgba(0, 200, 83, 0.4);
+      }
+
+      .error-msg {
+        color: var(--danger-500);
+        font-size: 13px;
+        font-weight: 500;
         margin-top: 10px;
         display: none;
+        padding: 8px 12px;
+        background: rgba(239, 68, 68, 0.06);
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+      }
+
+      .search-status {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--neutral-500);
+      }
+
+      /* Loading spinner for search button */
+      .btn-searching {
+        position: relative;
+        color: transparent !important;
+      }
+      .btn-searching::after {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* NFC icon animation */
+      .nfc-waves {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        margin: 0 auto 8px;
+      }
+      .nfc-waves .wave {
+        width: 3px;
+        background: linear-gradient(180deg, #667eea, #764ba2);
+        border-radius: 2px;
+        animation: wave-anim 1.2s ease-in-out infinite;
+      }
+      .nfc-waves .wave:nth-child(1) { height: 12px; animation-delay: 0s; }
+      .nfc-waves .wave:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+      .nfc-waves .wave:nth-child(3) { height: 28px; animation-delay: 0.2s; }
+      .nfc-waves .wave:nth-child(4) { height: 20px; animation-delay: 0.3s; }
+      .nfc-waves .wave:nth-child(5) { height: 12px; animation-delay: 0.4s; }
+      @keyframes wave-anim {
+        0%, 100% { transform: scaleY(0.6); opacity: 0.5; }
+        50% { transform: scaleY(1); opacity: 1; }
+      }
+
+      /* Success overlay */
+      .success-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+      }
+      .success-overlay.visible {
+        display: flex;
+      }
+      .success-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 40px 32px;
+        text-align: center;
+        max-width: 360px;
+        width: 90%;
+        box-shadow: var(--shadow-xl);
+        animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      }
+      @keyframes bounceIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .success-icon {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 16px;
+        background: linear-gradient(135deg, var(--accent-500), #009624);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        box-shadow: 0 4px 20px rgba(0, 200, 83, 0.4);
       }
     </style>
   </head>
   <body>
     <main class="container">
-      <h1>ReviewKita</h1>
-      <h2>Aktivasi Produk</h2>
-
-      <div class="form-group">
-        <label>Kode Kartu:</label>
-        <input
-          type="text"
-          id="display-card-code"
-          class="form-input"
-          readonly
-          style="background: #e9ecef; font-weight: bold"
-        />
+      <!-- NFC Wave Animation -->
+      <div class="nfc-waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
       </div>
 
+      <!-- Logo -->
+      <div class="logo-icon">📡</div>
+      <h1>ReviewKita</h1>
+      <p class="subtitle">Aktivasi Kartu NFC</p>
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="step-1"></div>
+        <div class="step-dot" id="step-2"></div>
+        <div class="step-dot" id="step-3"></div>
+      </div>
+
+      <!-- Card Code Badge -->
+      <div class="card-code-badge">
+        <span class="dot"></span>
+        <span id="display-card-code">—</span>
+      </div>
+
+      <!-- STEP 1: Search Business -->
       <div class="form-group">
-        <label>Cari Nama Bisnis Anda:</label>
+        <label class="form-label">Cari Bisnis Anda di Google Maps</label>
         <div class="search-row">
           <input
             type="text"
             id="search-input"
             class="form-input"
-            style="margin-top: 0"
             placeholder="Contoh: Kopi Senja Malang"
+            autocomplete="off"
           />
-          <button type="button" id="btn-search" class="btn">Cari</button>
+          <button type="button" id="btn-search" class="btn">🔍 Cari</button>
         </div>
-        <div
-          id="search-status"
-          style="margin-top: 5px; font-size: 14px; color: #666"
-        ></div>
-
+        <div id="search-status" class="search-status"></div>
         <ul id="search-results" class="result-list"></ul>
 
+        <!-- Selected Business -->
         <div id="selected-business-container" class="selected-box">
-          <strong>Bisnis Terpilih:</strong><br />
-          <span id="selected-business-display"></span>
+          <span class="check-icon">✅</span>
+          <span class="biz-name" id="selected-biz-name"></span>
+          <div class="biz-address" id="selected-biz-address"></div>
         </div>
 
         <input type="hidden" id="selected-place-id" />
@@ -110,142 +376,203 @@
         <input type="hidden" id="selected-business-address" />
       </div>
 
-      <!-- [BARU] Bagian PIN & Tombol Aktivasi (Akan muncul setelah bisnis dipilih) -->
-      <div id="pin-section" class="pin-box">
+      <!-- STEP 2: PIN Section -->
+      <div id="pin-section" class="pin-section">
         <div class="form-group">
-          <label>PIN Aktivasi (4 Digit):</label>
+          <label class="form-label">PIN Aktivasi (4 Digit)</label>
           <input
             type="password"
             id="input-pin"
-            class="form-input"
+            class="form-input pin-input"
             maxlength="4"
             placeholder="• • • •"
-            style="text-align: center; font-size: 24px; letter-spacing: 10px"
+            inputmode="numeric"
+            autocomplete="off"
           />
         </div>
-        <button
-          type="button"
-          id="btn-activate"
-          class="btn"
-          style="width: 100%; background: #28a745"
-        >
-          AKTIVASI KARTU
+
+        <button type="button" id="btn-activate" class="btn btn-activate">
+          🔓 AKTIVASI KARTU
         </button>
-        <div id="error-msg"></div>
+
+        <div id="error-msg" class="error-msg"></div>
       </div>
     </main>
 
+    <!-- Success Overlay -->
+    <div id="success-overlay" class="success-overlay">
+      <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h2 style="font-size: 22px; color: var(--neutral-800); margin-bottom: 8px;">Aktivasi Berhasil!</h2>
+        <p style="color: var(--neutral-500); font-size: 14px; margin-bottom: 20px;">
+          Kartu NFC Anda sudah aktif. Pelanggan bisa langsung tap untuk memberikan review.
+        </p>
+        <p style="color: var(--neutral-400); font-size: 13px;">Mengalihkan...</p>
+      </div>
+    </div>
+
     <script>
-      const pathParts = window.location.pathname.split("/");
+      // ============================
+      // DOM Elements
+      // ============================
+      const pathParts = window.location.pathname.split('/');
       const cardCode = pathParts[pathParts.length - 1];
-      document.getElementById("display-card-code").value = cardCode;
+      document.getElementById('display-card-code').textContent = cardCode;
 
-      const btnSearch = document.getElementById("btn-search");
-      const searchInput = document.getElementById("search-input");
-      const searchStatus = document.getElementById("search-status");
-      const searchResults = document.getElementById("search-results");
-      const selectedContainer = document.getElementById(
-        "selected-business-container",
-      );
-      const selectedDisplay = document.getElementById(
-        "selected-business-display",
-      );
+      const btnSearch = document.getElementById('btn-search');
+      const searchInput = document.getElementById('search-input');
+      const searchStatus = document.getElementById('search-status');
+      const searchResults = document.getElementById('search-results');
+      const selectedContainer = document.getElementById('selected-business-container');
+      const selectedBizName = document.getElementById('selected-biz-name');
+      const selectedBizAddress = document.getElementById('selected-biz-address');
 
-      const inputPlaceId = document.getElementById("selected-place-id");
-      const inputName = document.getElementById("selected-business-name");
-      const inputAddress = document.getElementById("selected-business-address");
+      const inputPlaceId = document.getElementById('selected-place-id');
+      const inputName = document.getElementById('selected-business-name');
+      const inputAddress = document.getElementById('selected-business-address');
 
-      const pinSection = document.getElementById("pin-section");
-      const btnActivate = document.getElementById("btn-activate");
-      const inputPin = document.getElementById("input-pin");
-      const errorMsg = document.getElementById("error-msg");
+      const pinSection = document.getElementById('pin-section');
+      const btnActivate = document.getElementById('btn-activate');
+      const inputPin = document.getElementById('input-pin');
+      const errorMsg = document.getElementById('error-msg');
 
-      // Pastikan PIN hanya menerima angka
-      inputPin.addEventListener("input", function () {
-        this.value = this.value.replace(/[^0-9]/g, "");
+      const stepDots = [
+        document.getElementById('step-1'),
+        document.getElementById('step-2'),
+        document.getElementById('step-3')
+      ];
+
+      // ============================
+      // Step Management
+      // ============================
+      function setStep(n) {
+        stepDots.forEach((dot, i) => {
+          dot.classList.remove('active', 'done');
+          if (i < n - 1) dot.classList.add('done');
+          else if (i === n - 1) dot.classList.add('active');
+        });
+      }
+
+      // ============================
+      // PIN Input - Numbers only
+      // ============================
+      inputPin.addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '');
       });
 
-      btnSearch.addEventListener("click", async () => {
-        const query = searchInput.value.trim();
-        if (!query) return;
+      // ============================
+      // Search Business
+      // ============================
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnSearch.click();
+        }
+      });
 
-        searchStatus.textContent = "Mencari...";
-        searchResults.style.display = "none";
-        searchResults.innerHTML = "";
-        pinSection.style.display = "none";
+      btnSearch.addEventListener('click', async () => {
+        const query = searchInput.value.trim();
+        if (!query) {
+          searchInput.focus();
+          return;
+        }
+
+        // UI loading state
+        btnSearch.classList.add('btn-searching');
+        btnSearch.disabled = true;
+        searchStatus.textContent = 'Mencari bisnis...';
+        searchResults.style.display = 'none';
+        searchResults.innerHTML = '';
+        pinSection.style.display = 'none';
+        selectedContainer.style.display = 'none';
+        setStep(1);
 
         try {
-          const response = await fetch(
-            `/api/search-business?q=${encodeURIComponent(query)}`,
-          );
+          const response = await fetch(`/api/search-business?q=${encodeURIComponent(query)}`);
           const data = await response.json();
 
-          // Jika server mengirim error, tampilkan pesan aslinya
           if (!response.ok || !Array.isArray(data)) {
-            searchStatus.textContent =
-              "Error: " + (data.error || "gagal mencari bisnis");
+            searchStatus.textContent = '❌ ' + (data.error || 'Gagal mencari bisnis');
             return;
           }
 
           if (data.length === 0) {
-            searchStatus.textContent = "Bisnis tidak ditemukan.";
+            searchStatus.textContent = '😔 Bisnis tidak ditemukan. Coba kata kunci lain.';
             return;
           }
 
           searchStatus.textContent = `Ditemukan ${data.length} hasil:`;
-          searchResults.style.display = "block";
+          searchResults.style.display = 'block';
 
           data.forEach((place) => {
-            const li = document.createElement("li");
-            li.className = "result-item";
-            const strong = document.createElement("strong");
-            strong.textContent = place.name;
-            const small = document.createElement("small");
-            small.style.color = "#666";
-            small.textContent = place.address;
-            li.append(strong, document.createElement("br"), small);
+            const li = document.createElement('li');
+            li.className = 'result-item';
 
-            li.addEventListener("click", () => {
+            const strong = document.createElement('strong');
+            strong.textContent = place.name;
+
+            const small = document.createElement('small');
+            small.textContent = place.address;
+
+            li.append(strong, small);
+
+            li.addEventListener('click', () => {
               inputPlaceId.value = place.place_id;
               inputName.value = place.name;
               inputAddress.value = place.address;
 
-              selectedDisplay.textContent = place.name + " - " + place.address;
-              selectedContainer.style.display = "block";
+              selectedBizName.textContent = place.name;
+              selectedBizAddress.textContent = place.address;
+              selectedContainer.style.display = 'block';
 
-              searchResults.style.display = "none";
-              searchStatus.textContent = "";
+              searchResults.style.display = 'none';
+              searchStatus.textContent = '';
 
-              // [BARU] Munculkan input PIN setelah bisnis dipilih
-              pinSection.style.display = "block";
-              errorMsg.style.display = "none";
+              // Show PIN section & update steps
+              pinSection.style.display = 'block';
+              errorMsg.style.display = 'none';
+              setStep(2);
+              inputPin.focus();
             });
 
             searchResults.appendChild(li);
           });
         } catch (error) {
-          searchStatus.textContent = "Terjadi kesalahan saat mencari data.";
+          searchStatus.textContent = '⚠️ Terjadi kesalahan saat mencari data.';
+        } finally {
+          btnSearch.classList.remove('btn-searching');
+          btnSearch.disabled = false;
         }
       });
 
-      // [BARU] Logika ketika tombol AKTIVASI ditekan
-      btnActivate.addEventListener("click", async () => {
+      // ============================
+      // Activate Card
+      // ============================
+      inputPin.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && inputPin.value.length === 4) {
+          e.preventDefault();
+          btnActivate.click();
+        }
+      });
+
+      btnActivate.addEventListener('click', async () => {
         const pin = inputPin.value;
 
         if (pin.length !== 4) {
-          errorMsg.textContent = "PIN harus 4 digit angka!";
-          errorMsg.style.display = "block";
+          errorMsg.textContent = '⚠️ PIN harus 4 digit angka!';
+          errorMsg.style.display = 'block';
+          inputPin.focus();
           return;
         }
 
         btnActivate.disabled = true;
-        btnActivate.textContent = "MEMPROSES...";
-        errorMsg.style.display = "none";
+        btnActivate.textContent = '⏳ MEMPROSES...';
+        errorMsg.style.display = 'none';
 
         try {
           const response = await fetch(`/api/cards/${cardCode}/activate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               place_id: inputPlaceId.value,
               business_name: inputName.value,
@@ -257,20 +584,29 @@
           const data = await response.json();
 
           if (data.success) {
-            alert("Aktivasi Berhasil! Anda akan dialihkan ke Halaman Review.");
-            // Refresh halaman, server akan otomatis menampilkan Halaman Review karena status sudah ACTIVE
-            window.location.reload();
+            // Step 3 complete
+            setStep(3);
+
+            // Show success overlay
+            document.getElementById('success-overlay').classList.add('visible');
+
+            // Redirect after delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 2500);
           } else {
-            errorMsg.textContent = data.message;
-            errorMsg.style.display = "block";
+            errorMsg.textContent = '❌ ' + data.message;
+            errorMsg.style.display = 'block';
             btnActivate.disabled = false;
-            btnActivate.textContent = "AKTIVASI KARTU";
+            btnActivate.textContent = '🔓 AKTIVASI KARTU';
+            inputPin.value = '';
+            inputPin.focus();
           }
         } catch (err) {
-          errorMsg.textContent = "Terjadi kesalahan sistem.";
-          errorMsg.style.display = "block";
+          errorMsg.textContent = '⚠️ Terjadi kesalahan sistem. Coba lagi.';
+          errorMsg.style.display = 'block';
           btnActivate.disabled = false;
-          btnActivate.textContent = "AKTIVASI KARTU";
+          btnActivate.textContent = '🔓 AKTIVASI KARTU';
         }
       });
     </script>
