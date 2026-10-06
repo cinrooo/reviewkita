@@ -42,8 +42,8 @@ for (let i = 0; i < JUMLAH_KARTU; i++) {
   const hashedPin = bcrypt.hashSync(pin, 10);
 
   // 1. Simpan ke Database
-  if (db.addCard(code)) {
-    db.updateCardPin(code, hashedPin);
+  if (db.addCard(code, pin)) {
+    db.updateCardPin(code, hashedPin, pin);
 
     // 2. Buat file Gambar QR Code (.png)
     const cardUrl = BASE_URL + code;

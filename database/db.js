@@ -98,13 +98,14 @@ module.exports = {
     }
   },
   
-  addCard(cardCode) {
+  addCard(cardCode, pin = null) {
     checkReload();
     if (this.getCardByCode(cardCode)) return false;
     const id = data.nextCardId++;
     data.cards.push({
       id,
       card_code: cardCode,
+      activation_pin: pin,
       activation_pin_hash: null, // Diisi nanti saat digenerate
       status: 'READY',
       business_id: null,
@@ -115,11 +116,12 @@ module.exports = {
     return true;
   },
   
-  updateCardPin(cardCode, pinHash) {
+  updateCardPin(cardCode, pinHash, plainPin = null) {
     checkReload();
     const card = this.getCardByCode(cardCode);
     if (card) {
       card.activation_pin_hash = pinHash;
+      if (plainPin) card.activation_pin = plainPin;
       save();
     }
   },

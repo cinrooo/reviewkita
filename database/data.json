@@ -19,7 +19,8 @@
     {
       "id": 1,
       "card_code": "RV-YW4DNBLQ",
-      "activation_pin_hash": "$2b$10$iZzw7Zw90AkNz/hAG3bw5..4hIhYv3t6gDgbYF5.NWdL0l7Y8sqzi",
+      "activation_pin": "8192",
+      "activation_pin_hash": "$2b$10$YcntQ2MmPez9SMuj2j5d6OQdTU4/bfnDXgG7lYtiUP5n6bCAl80Gq",
       "status": "READY",
       "business_id": null,
       "activated_at": null,
@@ -28,7 +29,8 @@
     {
       "id": 2,
       "card_code": "RV-I9WT3T9M",
-      "activation_pin_hash": "$2b$10$5xtu1kNJLl0hJTH8bAKn4urbf71GEX7O6zOhZYJwVRD9EKbu40Yfa",
+      "activation_pin": "4721",
+      "activation_pin_hash": "$2b$10$WA0jX9u667Zlz4NPsPMH/.G/nn0xsIIuOdJEZ1j4jaTLpQZP3rYjy",
       "status": "READY",
       "business_id": null,
       "activated_at": null,
@@ -37,7 +39,8 @@
     {
       "id": 3,
       "card_code": "RV-G3H4HM1R",
-      "activation_pin_hash": "$2b$10$RWZFKn.MKr8pUD1EQpEAyOmNbzRxcRyJKQsEYQop8pY7ECt7xI8Ju",
+      "activation_pin": "6305",
+      "activation_pin_hash": "$2b$10$XCa8G6fPs5rt/ozGe3/nGud7hXd4.XD/W8ZZyJxfa6M2CbHKkdjMm",
       "status": "READY",
       "business_id": null,
       "activated_at": null,
@@ -46,6 +49,7 @@
     {
       "id": 4,
       "card_code": "RV-2B87CNBK",
+      "activation_pin": null,
       "activation_pin_hash": "$2b$10$R0hD1Zyf6fuZGRjMBjIiiOlvZAsppUq.OlxsZvt6cuKe1NzYjR.I6",
       "status": "ACTIVE",
       "business_id": 1,
@@ -55,6 +59,7 @@
     {
       "id": 5,
       "card_code": "RV-12K8513B",
+      "activation_pin": null,
       "activation_pin_hash": "$2b$10$0dcNPk82EOprK46LsDQLlelYfjfDf/1yXYwMyhP/x5JLdLXRjoLP2",
       "status": "ACTIVE",
       "business_id": 2,
@@ -64,6 +69,7 @@
     {
       "id": 6,
       "card_code": "RV-LBQE4O2D",
+      "activation_pin": "4819",
       "activation_pin_hash": "$2b$10$.gZkyJq5SwKSdv9AjmcS6.fQ.otf3qXKqjS7uzgzm1YowOh0vmS42",
       "status": "READY",
       "business_id": null,
@@ -73,6 +79,7 @@
     {
       "id": 7,
       "card_code": "RV-P5R8FQR7",
+      "activation_pin": "4733",
       "activation_pin_hash": "$2b$10$ZVLhoyth0NoHQLUAfPeOuOYEPHDyHRnLrtxE0od50WC0my3zJTbXS",
       "status": "READY",
       "business_id": null,
@@ -82,6 +89,7 @@
     {
       "id": 8,
       "card_code": "RV-0RYUFTGC",
+      "activation_pin": "3358",
       "activation_pin_hash": "$2b$10$OmOKqiiP7PAyeipeVUvjku2NNCDOh2ZYE0MbUX/9bQVAO4DVUiK32",
       "status": "READY",
       "business_id": null,
@@ -91,6 +99,7 @@
     {
       "id": 9,
       "card_code": "RV-OTB21WRH",
+      "activation_pin": "5483",
       "activation_pin_hash": "$2b$10$PKNzUxe46g06tSDYogUfzeoDpL3iphyFB/e0F32hihQenWyeudyjW",
       "status": "READY",
       "business_id": null,
@@ -100,6 +109,7 @@
     {
       "id": 10,
       "card_code": "RV-OPF97SNL",
+      "activation_pin": "0038",
       "activation_pin_hash": "$2b$10$7GRWAKvUq4UTWyr5RfoJKOa5mEdcaaTT3Rbe1rYErTTR2JNEMQIwy",
       "status": "READY",
       "business_id": null,
@@ -109,6 +119,7 @@
     {
       "id": 11,
       "card_code": "RV-PMFT04IH",
+      "activation_pin": "5321",
       "activation_pin_hash": "$2b$10$PTfKiXnvD0cOYlJ0kkIPb.vEpecdGk/gDCBSVPmfWoQLJCoQ.nMdS",
       "status": "READY",
       "business_id": null,
@@ -118,6 +129,7 @@
     {
       "id": 12,
       "card_code": "RV-CV1FL3NI",
+      "activation_pin": "3648",
       "activation_pin_hash": "$2b$10$r7Nrx8vfdOex74ogtzOPQ.notRC6UvgIRifS6paNOXoB/24.fzzSG",
       "status": "READY",
       "business_id": null,
@@ -127,6 +139,7 @@
     {
       "id": 13,
       "card_code": "RV-NF17WY9T",
+      "activation_pin": "0572",
       "activation_pin_hash": "$2b$10$vFiDd4Z7Xfse4vsM1RXp1ePjD33pFXhoDNe1WDuLh2tINDN.bW6yO",
       "status": "READY",
       "business_id": null,
@@ -136,6 +149,7 @@
     {
       "id": 14,
       "card_code": "RV-4GAHAC1F",
+      "activation_pin": "9092",
       "activation_pin_hash": "$2b$10$oDk/Ua5TaLv4hVuhxmGTleZXDqT24n8By6GyjW3YNVrOeAGtcSrUS",
       "status": "READY",
       "business_id": null,
@@ -145,6 +159,7 @@
     {
       "id": 15,
       "card_code": "RV-IGBUB6FX",
+      "activation_pin": "3082",
       "activation_pin_hash": "$2b$10$ZuBZ21HPjtdtotwST05yQeKYx62tmxLN/bLwcfFHLvb2BA5wT0Eri",
       "status": "READY",
       "business_id": null,

@@ -1,12 +1,18 @@
-=== BATCH GENERATE: 4/10/2026, 09.34.28 (10 Kartu) ===
-1. Kode Kartu: RV-LBQE4O2D | PIN Aktivasi: 4819 | URL: https://reviewkita.my.id/card/RV-LBQE4O2D
-2. Kode Kartu: RV-P5R8FQR7 | PIN Aktivasi: 4733 | URL: https://reviewkita.my.id/card/RV-P5R8FQR7
-3. Kode Kartu: RV-0RYUFTGC | PIN Aktivasi: 3358 | URL: https://reviewkita.my.id/card/RV-0RYUFTGC
-4. Kode Kartu: RV-OTB21WRH | PIN Aktivasi: 5483 | URL: https://reviewkita.my.id/card/RV-OTB21WRH
-5. Kode Kartu: RV-OPF97SNL | PIN Aktivasi: 0038 | URL: https://reviewkita.my.id/card/RV-OPF97SNL
-6. Kode Kartu: RV-PMFT04IH | PIN Aktivasi: 5321 | URL: https://reviewkita.my.id/card/RV-PMFT04IH
-7. Kode Kartu: RV-CV1FL3NI | PIN Aktivasi: 3648 | URL: https://reviewkita.my.id/card/RV-CV1FL3NI
-8. Kode Kartu: RV-NF17WY9T | PIN Aktivasi: 0572 | URL: https://reviewkita.my.id/card/RV-NF17WY9T
-9. Kode Kartu: RV-4GAHAC1F | PIN Aktivasi: 9092 | URL: https://reviewkita.my.id/card/RV-4GAHAC1F
-10. Kode Kartu: RV-IGBUB6FX | PIN Aktivasi: 3082 | URL: https://reviewkita.my.id/card/RV-IGBUB6FX
+=== DAFTAR KARTU & PIN AKTIVASI REVIEWKITA ===
+(Hanya kartu dengan status READY yang butuh PIN aktivasi)
 
+1. Kode Kartu: RV-YW4DNBLQ | PIN Aktivasi: 8192 | URL: https://reviewkita.my.id/card/RV-YW4DNBLQ
+2. Kode Kartu: RV-I9WT3T9M | PIN Aktivasi: 4721 | URL: https://reviewkita.my.id/card/RV-I9WT3T9M
+3. Kode Kartu: RV-G3H4HM1R | PIN Aktivasi: 6305 | URL: https://reviewkita.my.id/card/RV-G3H4HM1R
+4. Kode Kartu: RV-2B87CNBK | [SUDAH AKTIF: Pujasera KebunKu]
+5. Kode Kartu: RV-12K8513B | [SUDAH AKTIF: WARUNG SHADINA]
+6. Kode Kartu: RV-LBQE4O2D | PIN Aktivasi: 4819 | URL: https://reviewkita.my.id/card/RV-LBQE4O2D
+7. Kode Kartu: RV-P5R8FQR7 | PIN Aktivasi: 4733 | URL: https://reviewkita.my.id/card/RV-P5R8FQR7
+8. Kode Kartu: RV-0RYUFTGC | PIN Aktivasi: 3358 | URL: https://reviewkita.my.id/card/RV-0RYUFTGC
+9. Kode Kartu: RV-OTB21WRH | PIN Aktivasi: 5483 | URL: https://reviewkita.my.id/card/RV-OTB21WRH
+10. Kode Kartu: RV-OPF97SNL | PIN Aktivasi: 0038 | URL: https://reviewkita.my.id/card/RV-OPF97SNL
+11. Kode Kartu: RV-PMFT04IH | PIN Aktivasi: 5321 | URL: https://reviewkita.my.id/card/RV-PMFT04IH
+12. Kode Kartu: RV-CV1FL3NI | PIN Aktivasi: 3648 | URL: https://reviewkita.my.id/card/RV-CV1FL3NI
+13. Kode Kartu: RV-NF17WY9T | PIN Aktivasi: 0572 | URL: https://reviewkita.my.id/card/RV-NF17WY9T
+14. Kode Kartu: RV-4GAHAC1F | PIN Aktivasi: 9092 | URL: https://reviewkita.my.id/card/RV-4GAHAC1F
+15. Kode Kartu: RV-IGBUB6FX | PIN Aktivasi: 3082 | URL: https://reviewkita.my.id/card/RV-IGBUB6FX

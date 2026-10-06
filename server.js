@@ -148,8 +148,8 @@ app.post("/api/admin/cards/generate", requireAdmin, async (req, res) => {
       const pin = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
       const hashedPin = bcrypt.hashSync(pin, 10);
 
-      if (db.addCard(code)) {
-        db.updateCardPin(code, hashedPin);
+      if (db.addCard(code, pin)) {
+        db.updateCardPin(code, hashedPin, pin);
         const cardUrl = BASE_URL + code;
         const filePath = path.join(qrFolder, `${code}.png`);
         try {
@@ -322,9 +322,10 @@ app.get("/api/admin/export-csv", requireAdmin, async (req, res) => {
   try {
     const cards = db.getAllCardsWithBusiness();
 
-    let csv = "ID,Kode Kartu,Status,Nama Bisnis,Alamat,Tanggal Aktivasi,Tanggal Dibuat\n";
+    let csv = "ID,Kode Kartu,PIN Aktivasi,Status,Nama Bisnis,Alamat,Tanggal Aktivasi,Tanggal Dibuat\n";
     cards.forEach((c) => {
-      csv += `${c.id},"${c.card_code}","${c.status}","${c.business_name || ""}","${(c.address || "").replace(/"/g, '""')}","${c.activated_at || ""}","${c.created_at || ""}"\n`;
+      const pinVal = c.status === "READY" ? (c.activation_pin || "") : "";
+      csv += `${c.id},"${c.card_code}","${pinVal}","${c.status}","${c.business_name || ""}","${(c.address || "").replace(/"/g, '""')}","${c.activated_at || ""}","${c.created_at || ""}"\n`;
     });
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");

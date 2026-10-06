@@ -274,6 +274,46 @@
         opacity: 1;
       }
 
+      .pin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(251, 191, 36, 0.08);
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        color: #fcd34d;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+      .pin-badge:hover {
+        background: rgba(251, 191, 36, 0.2);
+        border-color: rgba(251, 191, 36, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(251, 191, 36, 0.25);
+      }
+      .pin-badge:active {
+        transform: scale(0.96);
+      }
+      .pin-badge .pin-copy-hint {
+        font-size: 11px;
+        opacity: 0.5;
+        transition: opacity 0.2s ease;
+      }
+      .pin-badge:hover .pin-copy-hint {
+        opacity: 1;
+      }
+      .pin-empty {
+        color: #475569;
+        font-size: 12px;
+        font-style: italic;
+      }
+
       .status-badge {
         display: inline-flex;
         align-items: center;
@@ -407,7 +447,7 @@
       <div class="data-panel">
         <div class="panel-header">
           <h2>Daftar Kartu NFC</h2>
-          <input type="text" id="search-input" class="search-input" placeholder="Cari kode kartu atau bisnis..." />
+          <input type="text" id="search-input" class="search-input" placeholder="Cari kode kartu, PIN, atau bisnis..." />
         </div>
 
         <div class="table-wrap">
@@ -416,6 +456,7 @@
               <tr>
                 <th>ID</th>
                 <th>Kode Kartu</th>
+                <th>PIN Aktivasi</th>
                 <th>Status</th>
                 <th>Bisnis Terhubung</th>
                 <th>Aksi</th>
@@ -423,7 +464,7 @@
             </thead>
             <tbody id="table-body">
               <tr>
-                <td colspan="5" class="empty-state">
+                <td colspan="6" class="empty-state">
                   <div class="empty-icon">⏳</div>
                   Memuat data...
                 </td>
@@ -475,7 +516,7 @@
         } catch (error) {
           console.error('Gagal memuat data', error);
           document.getElementById('table-body').innerHTML =
-            '<tr><td colspan="5" class="empty-state"><div class="empty-icon">❌</div>Gagal memuat data. Coba login ulang.</td></tr>';
+            '<tr><td colspan="6" class="empty-state"><div class="empty-icon">❌</div>Gagal memuat data. Coba login ulang.</td></tr>';
         }
       }
 
@@ -485,7 +526,7 @@
 
         if (!Array.isArray(cards) || cards.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="5" class="empty-state"><div class="empty-icon">📭</div>Belum ada kartu. Jalankan: <code>node database/generator.js</code></td></tr>';
+            '<tr><td colspan="6" class="empty-state"><div class="empty-icon">📭</div>Belum ada kartu. Jalankan: <code>node database/generator.js</code></td></tr>';
           return;
         }
 
@@ -499,6 +540,20 @@
           else if (card.status === 'ACTIVE')
             statusBadge = '<span class="status-badge status-active">● ACTIVE</span>';
           else statusBadge = `<span class="status-badge">${card.status}</span>`;
+
+          let pinCell = '';
+          if (card.status === 'READY') {
+            const pinVal = card.activation_pin || '—';
+            pinCell = `
+              <span class="pin-badge" title="Klik untuk salin PIN" onclick="copyPin('${pinVal}')">
+                <span>🔑</span>
+                <span>${pinVal}</span>
+                <span class="pin-copy-hint">📋</span>
+              </span>
+            `;
+          } else {
+            pinCell = '<span class="pin-empty">— (Sudah Aktif) —</span>';
+          }
 
           const bizCell = card.business_name
             ? `<span class="biz-name">${card.business_name}</span>`
@@ -515,6 +570,7 @@
                 <span class="qr-icon" title="Unduh QR">📥</span>
               </span>
             </td>
+            <td>${pinCell}</td>
             <td>${statusBadge}</td>
             <td>${bizCell}</td>
             <td>
@@ -545,12 +601,27 @@
         }
       }
 
+      // Copy PIN
+      function copyPin(pin) {
+        if (!pin || pin === '—') return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(pin).then(() => {
+            showToast(`📋 PIN <b>${pin}</b> berhasil disalin ke clipboard!`);
+          }).catch(() => {
+            showToast(`PIN: <b>${pin}</b>`);
+          });
+        } else {
+          showToast(`PIN: <b>${pin}</b>`);
+        }
+      }
+
       // Search/filter
       document.getElementById('search-input').addEventListener('input', function () {
         const q = this.value.toLowerCase();
         const filtered = allCards.filter(
           (c) =>
             c.card_code.toLowerCase().includes(q) ||
+            (c.activation_pin && c.activation_pin.toLowerCase().includes(q)) ||
             (c.business_name && c.business_name.toLowerCase().includes(q))
         );
         renderCards(filtered);
