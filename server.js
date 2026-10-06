@@ -233,6 +233,78 @@ app.get("/api/search-business", async (req, res) => {
   }
 });
 
+// Helper: Otomatis mencari Google Place ID resmi dari URL Google Maps (misal https://maps.app.goo.gl/...)
+async function resolveGooglePlaceIdFromUrl(url) {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    const finalUrl = res.url || "";
+
+    // 1. Cek jika URL tujuan sudah memuat placeid= (misal writereview?placeid=ChIJ...)
+    const placeIdParam = finalUrl.match(/placeid=([a-zA-Z0-9_-]+)/);
+    if (placeIdParam && placeIdParam[1] && !placeIdParam[1].startsWith("http")) {
+      return placeIdParam[1];
+    }
+
+    // 2. Ekstrak nama dan alamat dari path /maps/place/Nama+Tempat,...
+    const matchName = finalUrl.match(/\/maps\/place\/([^/@]+)/);
+    if (matchName) {
+      const rawText = decodeURIComponent(matchName[1]).replace(/\+/g, " ");
+      const parts = rawText.split(",");
+      const query = parts.slice(0, 3).join(" ").trim();
+
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (apiKey && apiKey !== "your_api_key_here") {
+        const searchRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress",
+          },
+          body: JSON.stringify({
+            textQuery: query,
+            languageCode: "id",
+            regionCode: "ID",
+          }),
+        });
+        const searchData = await searchRes.json();
+        if (searchData.places && searchData.places.length > 0) {
+          return searchData.places[0].id;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Gagal resolve Place ID dari URL:", err.message);
+  }
+  return null;
+}
+
+// Helper untuk menentukan URL review (support Place ID Google Maps maupun Direct Link/Share Link)
+async function getReviewUrlForBusiness(business) {
+  if (!business) return null;
+  if (business.review_url && !business.review_url.includes("placeid=http")) {
+    return business.review_url;
+  }
+
+  let placeId = business.google_place_id || "";
+
+  // Jika tersimpan sebagai URL Google Maps (misal https://maps.app.goo.gl/...)
+  if (placeId.startsWith("http://") || placeId.startsWith("https://")) {
+    const resolvedId = await resolveGooglePlaceIdFromUrl(placeId);
+    if (resolvedId) {
+      // Simpan pembaruan ke database agar panggilan berikutnya instan
+      business.google_place_id = resolvedId;
+      business.review_url = `https://search.google.com/local/writereview?placeid=${resolvedId}`;
+      db.save();
+      return business.review_url;
+    }
+    // Jika tidak dapat di-resolve, redirect langsung ke URL Google Maps aslinya (BUKAN ke writereview)
+    return placeId;
+  }
+
+  return `https://search.google.com/local/writereview?placeid=${placeId}`;
+}
+
 app.post("/api/cards/:cardCode/activate", async (req, res) => {
   const cardCode = req.params.cardCode;
   const { place_id, business_name, address, pin } = req.body;
@@ -257,23 +329,21 @@ app.post("/api/cards/:cardCode/activate", async (req, res) => {
   if (!isMatch)
     return res.status(401).json({ success: false, message: "PIN Salah!" });
 
+  let finalPlaceId = place_id.trim();
+  // Jika input berupa link, coba otomatis cari Place ID aslinya
+  if (finalPlaceId.startsWith("http://") || finalPlaceId.startsWith("https://")) {
+    const resolvedId = await resolveGooglePlaceIdFromUrl(finalPlaceId);
+    if (resolvedId) {
+      finalPlaceId = resolvedId;
+    }
+  }
+
   const cleanAddress = address ? address.trim() : "Lokasi Google Maps";
-  const businessId = db.addBusiness(place_id.trim(), business_name.trim(), cleanAddress);
+  const businessId = db.addBusiness(finalPlaceId, business_name.trim(), cleanAddress);
   db.activateCard(card.id, businessId);
 
   res.json({ success: true, message: "Aktivasi berhasil!" });
 });
-
-// Helper untuk menentukan URL review (support Place ID Google Maps maupun Direct Link/Share Link)
-function getReviewUrlForBusiness(business) {
-  if (!business) return null;
-  if (business.review_url) return business.review_url;
-  const placeId = business.google_place_id || "";
-  if (placeId.startsWith("http://") || placeId.startsWith("https://")) {
-    return placeId;
-  }
-  return `https://search.google.com/local/writereview?placeid=${placeId}`;
-}
 
 app.get("/card/:cardCode", async (req, res) => {
   const cardCode = req.params.cardCode;
@@ -290,7 +360,7 @@ app.get("/card/:cardCode", async (req, res) => {
     return res.sendFile(path.join(__dirname, "views", "activation.html"));
   } else if (card.status === "ACTIVE") {
     const business = db.getBusinessById(card.business_id);
-    const reviewUrl = getReviewUrlForBusiness(business);
+    const reviewUrl = await getReviewUrlForBusiness(business);
     return res.redirect(reviewUrl);
   } else {
     return res
@@ -317,7 +387,7 @@ app.get("/api/cards/:cardCode/info", async (req, res) => {
     return res.status(404).json({ success: false, message: "Data bisnis tidak ditemukan" });
   }
 
-  const reviewUrl = getReviewUrlForBusiness(business);
+  const reviewUrl = await getReviewUrlForBusiness(business);
 
   res.json({
     success: true,
