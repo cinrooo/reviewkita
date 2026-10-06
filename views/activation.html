@@ -317,6 +317,97 @@
         font-size: 36px;
         box-shadow: 0 4px 20px rgba(0, 200, 83, 0.4);
       }
+
+      /* Method Tabs & Panel */
+      .method-tabs {
+        display: flex;
+        background: var(--neutral-100);
+        padding: 4px;
+        border-radius: var(--radius-sm);
+        gap: 4px;
+        margin-bottom: 12px;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 9px 12px;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--neutral-600);
+        border-radius: calc(var(--radius-sm) - 2px);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .tab-btn:hover {
+        color: var(--neutral-800);
+      }
+      .tab-btn.active {
+        background: white;
+        color: var(--primary-600);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+      .method-panel {
+        display: none;
+      }
+      .method-panel.active {
+        display: block;
+        animation: fadeIn 0.25s ease;
+      }
+      .link-input-group {
+        margin-bottom: 10px;
+        text-align: left;
+      }
+      .sub-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--neutral-600);
+        margin-bottom: 4px;
+      }
+      .input-hint {
+        display: block;
+        font-size: 11px;
+        color: var(--neutral-500);
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+      .btn-apply-link {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary-600), #1557b0);
+        color: white;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        margin-top: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .btn-apply-link:hover {
+        background: linear-gradient(135deg, var(--primary-700), #10458c);
+        box-shadow: 0 2px 10px rgba(26, 115, 232, 0.3);
+      }
+      .btn-change {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: var(--danger-500);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+      }
+      .btn-change:hover {
+        background: rgba(239, 68, 68, 0.16);
+      }
     </style>
   </head>
   <body>
@@ -348,27 +439,90 @@
         <span id="display-card-code">—</span>
       </div>
 
-      <!-- STEP 1: Search Business -->
-      <div class="form-group">
-        <label class="form-label">Cari Bisnis Anda di Google Maps</label>
-        <div class="search-row">
-          <input
-            type="text"
-            id="search-input"
-            class="form-input"
-            placeholder="Contoh: Kopi Senja Malang"
-            autocomplete="off"
-          />
-          <button type="button" id="btn-search" class="btn">🔍 Cari</button>
-        </div>
-        <div id="search-status" class="search-status"></div>
-        <ul id="search-results" class="result-list"></ul>
+      <!-- STEP 1: Connect Business -->
+      <div class="form-group" id="connect-business-group">
+        <label class="form-label">Hubungkan Bisnis Google Maps</label>
 
-        <!-- Selected Business -->
+        <!-- Method Tabs -->
+        <div class="method-tabs" id="method-tabs">
+          <button type="button" class="tab-btn active" id="tab-btn-search">
+            🔍 Cari Nama
+          </button>
+          <button type="button" class="tab-btn" id="tab-btn-link">
+            🔗 Tempel Link Maps
+          </button>
+        </div>
+
+        <!-- Panel 1: Search -->
+        <div id="panel-search" class="method-panel active">
+          <div class="search-row">
+            <input
+              type="text"
+              id="search-input"
+              class="form-input"
+              placeholder="Contoh: Kopi Senja Malang"
+              autocomplete="off"
+            />
+            <button type="button" id="btn-search" class="btn">🔍 Cari</button>
+          </div>
+          <div id="search-status" class="search-status"></div>
+          <ul id="search-results" class="result-list"></ul>
+        </div>
+
+        <!-- Panel 2: Link -->
+        <div id="panel-link" class="method-panel">
+          <div class="link-input-group">
+            <label class="sub-label">Link / Tautan Google Maps</label>
+            <input
+              type="text"
+              id="link-input-url"
+              class="form-input"
+              placeholder="https://maps.app.goo.gl/... atau https://g.page/..."
+              autocomplete="off"
+            />
+            <span class="input-hint">💡 Buka Google Maps HP &gt; Cari Bisnis &gt; Bagikan (Share) &gt; Salin Link</span>
+          </div>
+
+          <div class="link-input-group">
+            <label class="sub-label">Nama Bisnis</label>
+            <input
+              type="text"
+              id="link-input-name"
+              class="form-input"
+              placeholder="Contoh: Warkop Wolulas"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="link-input-group">
+            <label class="sub-label">Alamat / Cabang (Opsional)</label>
+            <input
+              type="text"
+              id="link-input-address"
+              class="form-input"
+              placeholder="Contoh: Perum Malang Anggun Sejahtera Blok A-5 No. 35"
+              autocomplete="off"
+            />
+          </div>
+
+          <button type="button" id="btn-apply-link" class="btn-apply-link">
+            ✅ Gunakan Lokasi Ini
+          </button>
+          <div id="link-status" class="error-msg" style="margin-top: 8px;"></div>
+        </div>
+
+        <!-- Selected Business Container -->
         <div id="selected-business-container" class="selected-box">
-          <span class="check-icon">✅</span>
-          <span class="biz-name" id="selected-biz-name"></span>
-          <div class="biz-address" id="selected-biz-address"></div>
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <span class="check-icon">✅</span>
+              <div>
+                <span class="biz-name" id="selected-biz-name"></span>
+                <div class="biz-address" id="selected-biz-address"></div>
+              </div>
+            </div>
+            <button type="button" id="btn-change-selection" class="btn-change">Ganti</button>
+          </div>
         </div>
 
         <input type="hidden" id="selected-place-id" />
@@ -419,18 +573,38 @@
       const cardCode = pathParts[pathParts.length - 1];
       document.getElementById('display-card-code').textContent = cardCode;
 
+      // Tabs & Panels
+      const tabBtnSearch = document.getElementById('tab-btn-search');
+      const tabBtnLink = document.getElementById('tab-btn-link');
+      const methodTabs = document.getElementById('method-tabs');
+      const panelSearch = document.getElementById('panel-search');
+      const panelLink = document.getElementById('panel-link');
+
+      // Search Inputs
       const btnSearch = document.getElementById('btn-search');
       const searchInput = document.getElementById('search-input');
       const searchStatus = document.getElementById('search-status');
       const searchResults = document.getElementById('search-results');
+
+      // Link Inputs
+      const linkInputUrl = document.getElementById('link-input-url');
+      const linkInputName = document.getElementById('link-input-name');
+      const linkInputAddress = document.getElementById('link-input-address');
+      const btnApplyLink = document.getElementById('btn-apply-link');
+      const linkStatus = document.getElementById('link-status');
+
+      // Selected Container & Change Button
       const selectedContainer = document.getElementById('selected-business-container');
       const selectedBizName = document.getElementById('selected-biz-name');
       const selectedBizAddress = document.getElementById('selected-biz-address');
+      const btnChangeSelection = document.getElementById('btn-change-selection');
 
+      // Hidden Form Fields
       const inputPlaceId = document.getElementById('selected-place-id');
       const inputName = document.getElementById('selected-business-name');
       const inputAddress = document.getElementById('selected-business-address');
 
+      // PIN & Activation
       const pinSection = document.getElementById('pin-section');
       const btnActivate = document.getElementById('btn-activate');
       const inputPin = document.getElementById('input-pin');
@@ -454,6 +628,104 @@
       }
 
       // ============================
+      // Tab Switching
+      // ============================
+      function switchTab(target) {
+        if (target === 'search') {
+          tabBtnSearch.classList.add('active');
+          tabBtnLink.classList.remove('active');
+          panelSearch.style.display = 'block';
+          panelSearch.classList.add('active');
+          panelLink.style.display = 'none';
+          panelLink.classList.remove('active');
+          searchInput.focus();
+        } else {
+          tabBtnLink.classList.add('active');
+          tabBtnSearch.classList.remove('active');
+          panelLink.style.display = 'block';
+          panelLink.classList.add('active');
+          panelSearch.style.display = 'none';
+          panelSearch.classList.remove('active');
+          linkInputUrl.focus();
+        }
+      }
+
+      tabBtnSearch.addEventListener('click', () => switchTab('search'));
+      tabBtnLink.addEventListener('click', () => switchTab('link'));
+
+      // ============================
+      // Selection Handler
+      // ============================
+      function applySelectedBusiness(placeId, name, address, isFromLink = false) {
+        inputPlaceId.value = placeId;
+        inputName.value = name;
+        inputAddress.value = address;
+
+        selectedBizName.textContent = name;
+        selectedBizAddress.textContent = address + (isFromLink ? ' • (Tautan Maps Terhubung)' : '');
+
+        // Hide Panels & Tabs, show selected box
+        methodTabs.style.display = 'none';
+        panelSearch.style.display = 'none';
+        panelLink.style.display = 'none';
+        selectedContainer.style.display = 'block';
+
+        // Show PIN section & proceed to step 2
+        pinSection.style.display = 'block';
+        errorMsg.style.display = 'none';
+        setStep(2);
+        inputPin.focus();
+      }
+
+      btnChangeSelection.addEventListener('click', () => {
+        selectedContainer.style.display = 'none';
+        pinSection.style.display = 'none';
+        methodTabs.style.display = 'flex';
+
+        // Re-display active panel
+        if (tabBtnSearch.classList.contains('active')) {
+          panelSearch.style.display = 'block';
+        } else {
+          panelLink.style.display = 'block';
+        }
+
+        setStep(1);
+      });
+
+      // ============================
+      // Tab 2: Manual Link Handler
+      // ============================
+      btnApplyLink.addEventListener('click', () => {
+        let url = linkInputUrl.value.trim();
+        const name = linkInputName.value.trim();
+        const address = linkInputAddress.value.trim() || 'Lokasi Google Maps';
+
+        linkStatus.style.display = 'none';
+
+        if (!url) {
+          linkStatus.textContent = '⚠️ Masukkan link / tautan Google Maps!';
+          linkStatus.style.display = 'block';
+          linkInputUrl.focus();
+          return;
+        }
+
+        // Auto prepend https if user omitted it
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          url = 'https://' + url;
+          linkInputUrl.value = url;
+        }
+
+        if (!name) {
+          linkStatus.textContent = '⚠️ Masukkan nama bisnis Anda!';
+          linkStatus.style.display = 'block';
+          linkInputName.focus();
+          return;
+        }
+
+        applySelectedBusiness(url, name, address, true);
+      });
+
+      // ============================
       // PIN Input - Numbers only
       // ============================
       inputPin.addEventListener('input', function () {
@@ -461,7 +733,7 @@
       });
 
       // ============================
-      // Search Business
+      // Tab 1: Search Business
       // ============================
       searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -474,6 +746,14 @@
         const query = searchInput.value.trim();
         if (!query) {
           searchInput.focus();
+          return;
+        }
+
+        // Auto-detect jika user mem-paste link Google Maps di kotak pencarian
+        if (query.startsWith('http://') || query.startsWith('https://') || query.includes('maps.app.goo.gl') || query.includes('goo.gl/maps') || query.includes('google.com/maps')) {
+          switchTab('link');
+          linkInputUrl.value = query;
+          linkInputName.focus();
           return;
         }
 
@@ -497,7 +777,7 @@
           }
 
           if (data.length === 0) {
-            searchStatus.textContent = '😔 Bisnis tidak ditemukan. Coba kata kunci lain.';
+            searchStatus.innerHTML = '😔 Bisnis tidak ditemukan di pencarian.<br><span style="color:var(--primary-600); cursor:pointer; text-decoration:underline; font-weight:600;" onclick="switchTab(\'link\')">👉 Gunakan Tempel Link Maps di sini</span>';
             return;
           }
 
@@ -517,22 +797,7 @@
             li.append(strong, small);
 
             li.addEventListener('click', () => {
-              inputPlaceId.value = place.place_id;
-              inputName.value = place.name;
-              inputAddress.value = place.address;
-
-              selectedBizName.textContent = place.name;
-              selectedBizAddress.textContent = place.address;
-              selectedContainer.style.display = 'block';
-
-              searchResults.style.display = 'none';
-              searchStatus.textContent = '';
-
-              // Show PIN section & update steps
-              pinSection.style.display = 'block';
-              errorMsg.style.display = 'none';
-              setStep(2);
-              inputPin.focus();
+              applySelectedBusiness(place.place_id, place.name, place.address, false);
             });
 
             searchResults.appendChild(li);

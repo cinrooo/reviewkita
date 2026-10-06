@@ -72,14 +72,16 @@ module.exports = {
     return data.businesses.find(b => b.id === Number(id));
   },
   
-  addBusiness(placeId, name, address) {
+  addBusiness(placeId, name, address, reviewUrl = null) {
     checkReload();
     const id = data.nextBusinessId++;
+    const isUrl = typeof placeId === "string" && (placeId.startsWith("http://") || placeId.startsWith("https://"));
     const business = {
       id,
       google_place_id: placeId,
       business_name: name,
       address: address,
+      review_url: reviewUrl || (isUrl ? placeId : null),
       created_at: new Date().toISOString()
     };
     data.businesses.push(business);

@@ -257,11 +257,23 @@ app.post("/api/cards/:cardCode/activate", async (req, res) => {
   if (!isMatch)
     return res.status(401).json({ success: false, message: "PIN Salah!" });
 
-  const businessId = db.addBusiness(place_id, business_name, address);
+  const cleanAddress = address ? address.trim() : "Lokasi Google Maps";
+  const businessId = db.addBusiness(place_id.trim(), business_name.trim(), cleanAddress);
   db.activateCard(card.id, businessId);
 
   res.json({ success: true, message: "Aktivasi berhasil!" });
 });
+
+// Helper untuk menentukan URL review (support Place ID Google Maps maupun Direct Link/Share Link)
+function getReviewUrlForBusiness(business) {
+  if (!business) return null;
+  if (business.review_url) return business.review_url;
+  const placeId = business.google_place_id || "";
+  if (placeId.startsWith("http://") || placeId.startsWith("https://")) {
+    return placeId;
+  }
+  return `https://search.google.com/local/writereview?placeid=${placeId}`;
+}
 
 app.get("/card/:cardCode", async (req, res) => {
   const cardCode = req.params.cardCode;
@@ -278,7 +290,7 @@ app.get("/card/:cardCode", async (req, res) => {
     return res.sendFile(path.join(__dirname, "views", "activation.html"));
   } else if (card.status === "ACTIVE") {
     const business = db.getBusinessById(card.business_id);
-    const reviewUrl = `https://search.google.com/local/writereview?placeid=${business.google_place_id}`;
+    const reviewUrl = getReviewUrlForBusiness(business);
     return res.redirect(reviewUrl);
   } else {
     return res
@@ -305,7 +317,7 @@ app.get("/api/cards/:cardCode/info", async (req, res) => {
     return res.status(404).json({ success: false, message: "Data bisnis tidak ditemukan" });
   }
 
-  const reviewUrl = `https://search.google.com/local/writereview?placeid=${business.google_place_id}`;
+  const reviewUrl = getReviewUrlForBusiness(business);
 
   res.json({
     success: true,
