@@ -361,6 +361,14 @@
       .btn-danger:hover {
         background: rgba(239, 68, 68, 0.25);
       }
+      .btn-warning {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.2);
+      }
+      .btn-warning:hover {
+        background: rgba(251, 191, 36, 0.25);
+      }
       .btn-outline {
         background: rgba(255, 255, 255, 0.06);
         color: #94a3b8;
@@ -573,7 +581,8 @@
             <td>${pinCell}</td>
             <td>${statusBadge}</td>
             <td>${bizCell}</td>
-            <td>
+            <td style="display:flex; gap:6px; flex-wrap:wrap;">
+              ${card.status === 'ACTIVE' ? `<button class="btn-sm btn-warning" onclick="resetCard(${card.id}, '${card.card_code}')">🔄 Reset</button>` : ''}
               <button class="btn-sm btn-danger" onclick="deleteCard(${card.id}, '${card.card_code}')">
                 🗑 Hapus
               </button>
@@ -585,7 +594,7 @@
 
       // Delete card
       async function deleteCard(id, code) {
-        if (!confirm(`Yakin ingin menghapus kartu ${code}?`)) return;
+        if (!confirm(`Yakin ingin menghapus kartu ${code}?\nKartu, data Maps, dan file QR code akan terhapus permanen!`)) return;
 
         try {
           const res = await fetch(`/api/admin/cards/${id}`, { method: 'DELETE' });
@@ -593,11 +602,31 @@
           if (data.success) {
             fetchCards();
             fetchStats();
+            showToast(`🗑 Kartu <b>${code}</b> berhasil dihapus`);
           } else {
             alert('Gagal: ' + data.message);
           }
         } catch (e) {
           alert('Terjadi kesalahan saat menghapus.');
+        }
+      }
+
+      // Reset card ke READY
+      async function resetCard(id, code) {
+        if (!confirm(`Reset kartu ${code} ke status READY?\nData Google Maps bisnis akan dihapus.\nKartu & QR code fisik tetap bisa dipakai.`)) return;
+
+        try {
+          const res = await fetch(`/api/admin/cards/${id}/reset`, { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            fetchCards();
+            fetchStats();
+            showToast(`🔄 Kartu <b>${code}</b> direset! PIN baru: <b>${data.new_pin}</b>`);
+          } else {
+            alert('Gagal: ' + data.message);
+          }
+        } catch (e) {
+          alert('Terjadi kesalahan saat mereset kartu.');
         }
       }
 

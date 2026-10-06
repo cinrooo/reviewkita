@@ -361,6 +361,33 @@ app.delete("/api/admin/cards/:id", requireAdmin, async (req, res) => {
 });
 
 // ==========================================
+// [BARU] Endpoint Reset Kartu ke Status READY
+// ==========================================
+app.post("/api/admin/cards/:id/reset", requireAdmin, async (req, res) => {
+  const cardId = req.params.id;
+  try {
+    // Buat PIN baru agar lebih aman
+    const newPin = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+    const newPinHash = bcrypt.hashSync(newPin, 10);
+
+    const card = db.resetCard(Number(cardId), newPin, newPinHash);
+
+    if (!card) {
+      return res.status(404).json({ success: false, message: "Kartu tidak ditemukan" });
+    }
+
+    res.json({
+      success: true,
+      message: "Kartu berhasil direset ke status READY",
+      card_code: card.card_code,
+      new_pin: newPin
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+
+// ==========================================
 // [BARU] Endpoint Statistik Dashboard
 // ==========================================
 app.get("/api/admin/stats", requireAdmin, async (req, res) => {

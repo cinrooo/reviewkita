@@ -154,6 +154,24 @@ module.exports = {
     return null;
   },
   
+  resetCard(cardId, newPin = null, newPinHash = null) {
+    checkReload();
+    const card = this.getCardById(cardId);
+    if (card) {
+      if (card.business_id) {
+        data.businesses = data.businesses.filter(b => b.id !== card.business_id);
+      }
+      card.status = 'READY';
+      card.business_id = null;
+      card.activated_at = null;
+      if (newPin) card.activation_pin = newPin;
+      if (newPinHash) card.activation_pin_hash = newPinHash;
+      save();
+      return card;
+    }
+    return null;
+  },
+
   getStats() {
     checkReload();
     return {
