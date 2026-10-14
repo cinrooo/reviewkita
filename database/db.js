@@ -13,11 +13,17 @@ let data = {
 
 let lastMtime = 0;
 
+// Tanggal lokal (WIB) dalam format YYYY-MM-DD
+function dayOf(iso) {
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+}
+
 function reload() {
   if (fs.existsSync(dbPath)) {
     try {
       const stat = fs.statSync(dbPath);
       data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+      if (!data.events) data.events = [];
       lastMtime = stat.mtimeMs;
     } catch (e) {
       console.error("Gagal membaca data.json:", e.message);
@@ -162,6 +168,7 @@ module.exports = {
         data.businesses = data.businesses.filter(b => b.id !== card.business_id);
       }
       data.cards.splice(cardIndex, 1);
+      if (data.events) data.events = data.events.filter(e => e.card_id !== card.id);
       save();
       return card;
     }
@@ -184,6 +191,31 @@ module.exports = {
       return card;
     }
     return null;
+  },
+
+  addEvent(cardId, type, extra = {}) {
+    checkReload();
+    if (!data.events) data.events = [];
+    data.events.push({ card_id: Number(cardId), type, at: new Date().toISOString(), ...extra });
+    // ponytail: simpan 5000 event terakhir saja. Upgrade: file log terpisah jika trafik besar
+    if (data.events.length > 5000) data.events = data.events.slice(-5000);
+    save();
+  },
+
+  getCardStats(cardId) {
+    checkReload();
+    const id = Number(cardId);
+    const today = dayOf(new Date().toISOString());
+    const evs = (data.events || []).filter(e => e.card_id === id);
+    const ratings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    evs.filter(e => e.type === 'rating').forEach(e => { ratings[e.rating] = (ratings[e.rating] || 0) + 1; });
+    const scans = evs.filter(e => e.type === 'scan');
+    return {
+      scans_total: scans.length,
+      scans_today: scans.filter(e => dayOf(e.at) === today).length,
+      ratings,
+      complaints: evs.filter(e => e.type === 'complaint').slice(-20).reverse()
+    };
   },
 
   getStats() {

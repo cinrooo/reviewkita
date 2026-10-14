@@ -309,6 +309,7 @@
           stars.forEach((b) => b.classList.toggle('on', parseInt(b.dataset.r, 10) <= rating));
           // Jeda singkat agar animasi bintang terlihat sebelum pindah step
           setTimeout(() => show(rating >= 4 ? 'step-google' : 'step-complaint'), 250);
+          if (rating >= 4) fetch(`/api/cards/${cardCode}/rate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rating }) });
         }));
 
         document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => {

@@ -582,6 +582,7 @@
             <td>${statusBadge}</td>
             <td>${bizCell}</td>
             <td style="display:flex; gap:6px; flex-wrap:wrap;">
+              ${card.status === 'ACTIVE' ? `<button class="btn-sm btn-outline" onclick="openStats(${card.id}, '${card.card_code}')" title="Lihat statistik">📊</button>` : ''}
               ${card.status === 'ACTIVE' ? `<button class="btn-sm btn-outline" onclick="editWa(${card.business_id}, '${card.business_name || ''}', '${card.wa_number || ''}')" title="Atur nomor WA admin">📱 WA${card.wa_number ? ' ✓' : ''}</button>` : ''}
               ${card.status === 'ACTIVE' ? `<button class="btn-sm btn-warning" onclick="resetCard(${card.id}, '${card.card_code}')">🔄 Reset</button>` : ''}
               <button class="btn-sm btn-danger" onclick="deleteCard(${card.id}, '${card.card_code}')">
@@ -776,12 +777,70 @@
         }, 2500);
       }
 
+      // Statistik per kartu
+      async function openStats(id, code) {
+        const modal = document.getElementById('statsModal');
+        const body = document.getElementById('statsBody');
+        document.getElementById('statsTitle').textContent = `Statistik ${code}`;
+        body.innerHTML = '<p style="color:#94a3b8">Memuat...</p>';
+        modal.style.display = 'flex';
+        try {
+          const res = await fetch(`/api/admin/cards/${id}/stats`);
+          const d = await res.json();
+          if (!d.success) { body.innerHTML = `<p>${d.message}</p>`; return; }
+
+          const r = d.ratings;
+          const total = Object.values(r).reduce((a, b) => a + b, 0);
+          const bar = (n) => {
+            const pct = total ? Math.round((n / total) * 100) : 0;
+            return `<div style="height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div></div>`;
+          };
+          const ratingRows = [5, 4, 3, 2, 1].map(s =>
+            `<div style="display:grid; grid-template-columns:40px 1fr 36px; gap:10px; align-items:center; margin:6px 0; font-size:13px;"><span>${'⭐'.repeat(s)}</span>${bar(r[s])}<span style="text-align:right; color:#94a3b8;">${r[s]}</span></div>`
+          ).join('');
+
+          const complaints = d.complaints.length
+            ? d.complaints.map(c => `<div style="padding:10px; background:rgba(255,255,255,0.04); border-radius:8px; margin-bottom:8px; font-size:13px;"><div style="color:#fbbf24; font-weight:600; margin-bottom:4px;">⭐ ${c.rating} · ${new Date(c.at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</div>${escapeHtml(c.text)}</div>`).join('')
+            : '<p style="color:#64748b; font-size:13px;">Belum ada masukan.</p>';
+
+          body.innerHTML = `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;">
+              <div style="background:rgba(99,102,241,0.12); padding:14px; border-radius:12px; text-align:center;"><div style="font-size:22px; font-weight:800; color:#a5b4fc;">${d.scans_today}</div><div style="font-size:11px; color:#94a3b8; text-transform:uppercase;">Scan hari ini</div></div>
+              <div style="background:rgba(52,211,153,0.12); padding:14px; border-radius:12px; text-align:center;"><div style="font-size:22px; font-weight:800; color:#6ee7b7;">${d.scans_total}</div><div style="font-size:11px; color:#94a3b8; text-transform:uppercase;">Total scan</div></div>
+            </div>
+            <h4 style="font-size:13px; color:#cbd5e1; margin-bottom:6px;">Sebaran Rating (${total})</h4>
+            ${ratingRows}
+            <h4 style="font-size:13px; color:#cbd5e1; margin:16px 0 8px;">Masukan Terbaru</h4>
+            ${complaints}
+          `;
+        } catch (e) {
+          body.innerHTML = '<p>Gagal memuat statistik.</p>';
+        }
+      }
+
+      function closeStats() {
+        document.getElementById('statsModal').style.display = 'none';
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
       // Init
       fetchStats();
       fetchCards();
     </script>
 
-    <!-- Modal Generate Kartu -->
+    <!-- Modal Statistik -->
+    <div id="statsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+      <div style="background:#1e293b; border:1px solid rgba(255,255,255,0.12); border-radius:16px; max-width:460px; width:100%; max-height:85vh; overflow-y:auto; padding:24px; color:#f8fafc;">
+        <h3 id="statsTitle" style="margin-top:0; font-size:18px;">Statistik</h3>
+        <div id="statsBody" style="margin-top:14px;"></div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+          <button type="button" class="btn-sm btn-outline" onclick="closeStats()">Tutup</button>
+        </div>
+      </div>
+    </div>
     <div id="generateModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
       <div style="background:#1e293b; border:1px solid rgba(255,255,255,0.12); border-radius:16px; max-width:480px; width:100%; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.5); color:#f8fafc;">
         <h3 style="margin-top:0; font-size:18px; display:flex; align-items:center; gap:8px;">✨ Buat Kartu Baru</h3>

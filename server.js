@@ -359,6 +359,8 @@ app.get("/card/:cardCode", async (req, res) => {
   if (card.status === "READY") {
     return res.sendFile(path.join(__dirname, "views", "activation.html"));
   } else if (card.status === "ACTIVE") {
+    // Catat scan (dibuka pelanggan)
+    db.addEvent(card.id, "scan");
     // Halaman rating dulu; rating 4-5 diteruskan ke Google, 1-3 minta keluhan
     return res.sendFile(path.join(__dirname, "views", "review.html"));
   } else {
@@ -399,6 +401,23 @@ app.get("/api/cards/:cardCode/info", async (req, res) => {
 // ==========================================
 // [BARU] Endpoint Ekspor CSV Data Kartu
 // ==========================================
+// Catat rating 4-5 (pelanggan diteruskan ke Google, tidak lewat feedback)
+app.post("/api/cards/:cardCode/rate", (req, res) => {
+  const card = db.getCardByCode(req.params.cardCode);
+  if (!card || card.status !== "ACTIVE")
+    return res.status(404).json({ success: false });
+  const rating = parseInt(req.body.rating, 10);
+  if (rating >= 1 && rating <= 5) db.addEvent(card.id, "rating", { rating });
+  res.json({ success: true });
+});
+
+// Statistik per kartu untuk dasbor admin (scan, rating, masukan)
+app.get("/api/admin/cards/:id/stats", requireAdmin, (req, res) => {
+  const card = db.getCardById(Number(req.params.id));
+  if (!card) return res.status(404).json({ success: false, message: "Kartu tidak ditemukan" });
+  res.json({ success: true, card_code: card.card_code, ...db.getCardStats(card.id) });
+});
+
 // Rating 1-3: masukan pelanggan dikirim ke WA admin (wa.me, pelanggan tekan kirim)
 app.post("/api/cards/:cardCode/feedback", (req, res) => {
   const card = db.getCardByCode(req.params.cardCode);
@@ -421,6 +440,10 @@ app.post("/api/cards/:cardCode/feedback", (req, res) => {
     `MASUKAN PELANGGAN BINTANG ${rating}/5\n` +
     (business ? `Bisnis: ${business.business_name}\n` : "") +
     `\n${complaint}`;
+
+  // Catat rating & masukan untuk statistik dasbor
+  db.addEvent(card.id, "rating", { rating });
+  db.addEvent(card.id, "complaint", { rating, text: complaint });
 
   res.json({ success: true, wa_url: `https://wa.me/${adminWa}?text=${encodeURIComponent(text)}` });
 });
