@@ -34,3 +34,5 @@ tmp/
 
 # Log server cPanel
 stderr.log
+# Data kartu & bisnis (hidup di server, jangan di-commit)
+database/data.json
