@@ -359,9 +359,8 @@ app.get("/card/:cardCode", async (req, res) => {
   if (card.status === "READY") {
     return res.sendFile(path.join(__dirname, "views", "activation.html"));
   } else if (card.status === "ACTIVE") {
-    const business = db.getBusinessById(card.business_id);
-    const reviewUrl = await getReviewUrlForBusiness(business);
-    return res.redirect(reviewUrl);
+    // Halaman rating dulu; rating 4-5 diteruskan ke Google, 1-3 minta keluhan
+    return res.sendFile(path.join(__dirname, "views", "review.html"));
   } else {
     return res
       .status(403)
@@ -400,6 +399,31 @@ app.get("/api/cards/:cardCode/info", async (req, res) => {
 // ==========================================
 // [BARU] Endpoint Ekspor CSV Data Kartu
 // ==========================================
+// Rating 1-3: masukan pelanggan dikirim ke WA admin (wa.me, pelanggan tekan kirim)
+app.post("/api/cards/:cardCode/feedback", (req, res) => {
+  const card = db.getCardByCode(req.params.cardCode);
+  if (!card || card.status !== "ACTIVE")
+    return res.status(404).json({ success: false, message: "Kartu tidak ditemukan atau belum aktif" });
+
+  const rating = parseInt(req.body.rating, 10);
+  const complaint = String(req.body.complaint || "").trim().slice(0, 1000);
+  if (!(rating >= 1 && rating <= 3) || !complaint)
+    return res.status(400).json({ success: false, message: "Rating (1-3) dan keluhan wajib diisi" });
+
+  const adminWa = (process.env.ADMIN_WA_NUMBER || "").replace(/\D/g, "");
+  if (!adminWa)
+    return res.status(500).json({ success: false, message: "ADMIN_WA_NUMBER belum diatur di server" });
+
+  // ponytail: nomor WA global. Upgrade: simpan nomor per bisnis di data.json
+  const business = db.getBusinessById(card.business_id);
+  const text =
+    `MASUKAN PELANGGAN BINTANG ${rating}/5\n` +
+    (business ? `Bisnis: ${business.business_name}\n` : "") +
+    `\n${complaint}`;
+
+  res.json({ success: true, wa_url: `https://wa.me/${adminWa}?text=${encodeURIComponent(text)}` });
+});
+
 app.get("/api/admin/export-csv", requireAdmin, async (req, res) => {
   try {
     const cards = db.getAllCardsWithBusiness();
