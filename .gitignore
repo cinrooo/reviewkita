@@ -23,3 +23,14 @@ desktop.ini
 # Logs
 *.log
 npm-debug.log*
+
+# Backup data kartu (jangan ikut ke GitHub)
+database/data-backup-*.json
+database/data-*.json
+data-backup-*.json
+
+# Folder runtime Passenger cPanel
+tmp/
+
+# Log server cPanel
+stderr.log
