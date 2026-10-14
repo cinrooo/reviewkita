@@ -82,11 +82,21 @@ module.exports = {
       business_name: name,
       address: address,
       review_url: reviewUrl || (isUrl ? placeId : null),
+      wa_number: null,
       created_at: new Date().toISOString()
     };
     data.businesses.push(business);
     save();
     return id;
+  },
+
+  setBusinessWa(businessId, waNumber) {
+    checkReload();
+    const business = this.getBusinessById(businessId);
+    if (!business) return false;
+    business.wa_number = waNumber;
+    save();
+    return true;
   },
   
   activateCard(cardId, businessId) {
@@ -134,8 +144,10 @@ module.exports = {
       const b = c.business_id ? this.getBusinessById(c.business_id) : null;
       return {
         ...c,
+        business_id: c.business_id || null,
         business_name: b ? b.business_name : null,
-        address: b ? b.address : null
+        address: b ? b.address : null,
+        wa_number: b ? b.wa_number : null
       };
     }).reverse(); // Urutkan terbaru di atas
   },

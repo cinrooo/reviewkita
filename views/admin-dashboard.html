@@ -582,6 +582,7 @@
             <td>${statusBadge}</td>
             <td>${bizCell}</td>
             <td style="display:flex; gap:6px; flex-wrap:wrap;">
+              ${card.status === 'ACTIVE' ? `<button class="btn-sm btn-outline" onclick="editWa(${card.business_id}, '${card.business_name || ''}', '${card.wa_number || ''}')" title="Atur nomor WA admin">📱 WA${card.wa_number ? ' ✓' : ''}</button>` : ''}
               ${card.status === 'ACTIVE' ? `<button class="btn-sm btn-warning" onclick="resetCard(${card.id}, '${card.card_code}')">🔄 Reset</button>` : ''}
               <button class="btn-sm btn-danger" onclick="deleteCard(${card.id}, '${card.card_code}')">
                 🗑 Hapus
@@ -590,6 +591,29 @@
           `;
           tbody.appendChild(tr);
         });
+      }
+
+      // Atur nomor WA admin per bisnis
+      async function editWa(businessId, bizName, current) {
+        if (!businessId) return alert('Bisnis belum terhubung.');
+        const input = prompt(`Nomor WA untuk ${bizName}\nFormat 62xxxxxxxxxx (kosongkan untuk hapus):`, current);
+        if (input === null) return;
+        try {
+          const res = await fetch(`/api/admin/businesses/${businessId}/wa`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wa_number: input }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            fetchCards();
+            showToast(`📱 ${data.message}`);
+          } else {
+            alert('Gagal: ' + data.message);
+          }
+        } catch (e) {
+          alert('Terjadi kesalahan saat menyimpan.');
+        }
       }
 
       // Delete card

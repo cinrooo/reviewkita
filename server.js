@@ -410,12 +410,13 @@ app.post("/api/cards/:cardCode/feedback", (req, res) => {
   if (!(rating >= 1 && rating <= 3) || !complaint)
     return res.status(400).json({ success: false, message: "Rating (1-3) dan keluhan wajib diisi" });
 
-  const adminWa = (process.env.ADMIN_WA_NUMBER || "").replace(/\D/g, "");
-  if (!adminWa)
-    return res.status(500).json({ success: false, message: "ADMIN_WA_NUMBER belum diatur di server" });
-
-  // ponytail: nomor WA global. Upgrade: simpan nomor per bisnis di data.json
+  // Nomor per bisnis (diatur di dasbor admin), fallback ke ADMIN_WA_NUMBER global
   const business = db.getBusinessById(card.business_id);
+  const waRaw = (business && business.wa_number) || process.env.ADMIN_WA_NUMBER || "";
+  const adminWa = String(waRaw).replace(/\D/g, "");
+  if (!adminWa)
+    return res.status(500).json({ success: false, message: "Nomor WA admin belum diatur untuk bisnis ini" });
+
   const text =
     `MASUKAN PELANGGAN BINTANG ${rating}/5\n` +
     (business ? `Bisnis: ${business.business_name}\n` : "") +
@@ -491,6 +492,17 @@ app.post("/api/admin/cards/:id/reset", requireAdmin, async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
+});
+
+// Admin: atur nomor WA admin per bisnis (kosongkan untuk hapus)
+app.post("/api/admin/businesses/:id/wa", requireAdmin, (req, res) => {
+  const raw = String(req.body.wa_number || "").replace(/\D/g, "");
+  if (raw && !/^62\d{8,14}$/.test(raw))
+    return res.status(400).json({ success: false, message: "Format harus 62xxxxxxxxxx" });
+
+  const ok = db.setBusinessWa(Number(req.params.id), raw || null);
+  if (!ok) return res.status(404).json({ success: false, message: "Bisnis tidak ditemukan" });
+  res.json({ success: true, message: raw ? "Nomor WA disimpan" : "Nomor WA dihapus" });
 });
 
 // ==========================================
