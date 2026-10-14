@@ -308,11 +308,16 @@ async function getReviewUrlForBusiness(business) {
 app.post("/api/cards/:cardCode/activate", async (req, res) => {
   const cardCode = req.params.cardCode;
   const { place_id, business_name, address, pin } = req.body;
+  const waNumber = String(req.body.wa_number || "").replace(/\D/g, "").replace(/^0/, "62");
 
   if (!place_id || !business_name || !pin)
     return res
       .status(400)
       .json({ success: false, message: "Data belum lengkap!" });
+  if (!/^62\d{8,14}$/.test(waNumber))
+    return res
+      .status(400)
+      .json({ success: false, message: "Nomor WA tidak valid (contoh: 0831-9278-3854)" });
 
   const card = db.getCardByCode(cardCode);
 
@@ -340,6 +345,7 @@ app.post("/api/cards/:cardCode/activate", async (req, res) => {
 
   const cleanAddress = address ? address.trim() : "Lokasi Google Maps";
   const businessId = db.addBusiness(finalPlaceId, business_name.trim(), cleanAddress);
+  db.setBusinessWa(businessId, waNumber);
   db.activateCard(card.id, businessId);
 
   res.json({ success: true, message: "Aktivasi berhasil!" });

@@ -533,6 +533,19 @@
       <!-- STEP 2: PIN Section -->
       <div id="pin-section" class="pin-section">
         <div class="form-group">
+          <label class="form-label">Nomor WA Admin Bisnis</label>
+          <input
+            type="tel"
+            id="input-wa"
+            class="form-input"
+            placeholder="0831-9278-3854"
+            inputmode="tel"
+            autocomplete="tel"
+          />
+          <small style="color: var(--neutral-400); font-size: 12px;">Nomor untuk menerima masukan pelanggan bintang 1-3.</small>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">PIN Aktivasi (4 Digit)</label>
           <input
             type="password"
@@ -608,6 +621,7 @@
       const pinSection = document.getElementById('pin-section');
       const btnActivate = document.getElementById('btn-activate');
       const inputPin = document.getElementById('input-pin');
+      const inputWa = document.getElementById('input-wa');
       const errorMsg = document.getElementById('error-msg');
 
       const stepDots = [
@@ -823,6 +837,13 @@
       btnActivate.addEventListener('click', async () => {
         const pin = inputPin.value;
 
+        if (!/^0?8\d{7,13}$|^62\d{8,14}$/.test(inputWa.value.replace(/\D/g, ''))) {
+          errorMsg.textContent = '⚠️ Nomor WA tidak valid (contoh: 0831-9278-3854)';
+          errorMsg.style.display = 'block';
+          inputWa.focus();
+          return;
+        }
+
         if (pin.length !== 4) {
           errorMsg.textContent = '⚠️ PIN harus 4 digit angka!';
           errorMsg.style.display = 'block';
@@ -842,6 +863,7 @@
               place_id: inputPlaceId.value,
               business_name: inputName.value,
               address: inputAddress.value,
+              wa_number: inputWa.value,
               pin: pin,
             }),
           });
