@@ -3,137 +3,230 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Membuka Ulasan Google...</title>
-    <meta name="description" content="Anda akan diarahkan ke Google Maps untuk memberikan ulasan." />
+    <title>Beri Penilaian</title>
+    <meta name="description" content="Bagikan pengalaman Anda." />
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+      /*
+        Design decisions (R-31):
+        - Plus Jakarta Sans: karakter ramah, cocok untuk produk merchant Indonesia
+        - Hijau (#16a34a) sebagai aksen tunggal: positif, bukan biru-ungu AI default (R-01)
+        - Latar putih/abu muda: contrast tinggi, mudah dibaca di outdoor (R-25)
+        - Bintang jadi focal point tunggal di tengah layar (Liveliness)
+        - Dua jalur output (WA vs Google) dibedakan warna merah & biru bermakna: merah = keluhan panas, biru = Google
+        - Tidak ada countdown, tidak ada auto-redirect (permintaan user)
+        - Motion hanya hover/active, tidak ada fade-up template (R-19, MOTION 1)
+      */
 
       :root {
-        --primary: #4f46e5;
-        --primary-light: #6366f1;
-        --google-blue: #1a73e8;
-        --google-red: #ea4335;
-        --google-yellow: #fbbc04;
-        --google-green: #34a853;
-        --text: #0f172a;
-        --muted: #64748b;
-        --bg: #f8fafc;
+        --green: #16a34a;
+        --green-bg: #f0fdf4;
+        --red: #dc2626;
+        --blue: #1a73e8;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --bg: #f9fafb;
       }
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         background: var(--bg);
         color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
       }
 
-      .wrap {
+      /* ── Wrapper ── */
+      .page {
         width: 100%;
-        max-width: 380px;
-        text-align: center;
-        animation: up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        max-width: 400px;
       }
 
-      @keyframes up {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-
-      /* Google G icon */
-      .g-icon {
-        width: 72px;
-        height: 72px;
-        border-radius: 50%;
+      /* ── Business header card ── */
+      .biz-card {
         background: #fff;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .biz-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--green-bg);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 24px;
-      }
-
-      .g-icon svg {
-        width: 42px;
-        height: 42px;
-      }
-
-      /* Business name */
-      .biz-name {
+        flex-shrink: 0;
         font-size: 22px;
-        font-weight: 800;
+      }
+
+      .biz-info {
+        min-width: 0;
+      }
+
+      .biz-name {
+        font-size: 15px;
+        font-weight: 700;
         color: var(--text);
-        line-height: 1.25;
-        margin-bottom: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .biz-addr {
-        font-size: 13px;
+        font-size: 12px;
         color: var(--muted);
-        line-height: 1.5;
-        margin-bottom: 32px;
+        margin-top: 2px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
       }
 
-      /* Stars display (static, decorative) */
-      .stars-row {
-        display: flex;
-        justify-content: center;
-        gap: 4px;
-        margin-bottom: 32px;
-      }
-
-      .stars-row span {
-        font-size: 28px;
-        animation: starPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-      }
-      .stars-row span:nth-child(1) { animation-delay: 0.1s; }
-      .stars-row span:nth-child(2) { animation-delay: 0.2s; }
-      .stars-row span:nth-child(3) { animation-delay: 0.3s; }
-      .stars-row span:nth-child(4) { animation-delay: 0.4s; }
-      .stars-row span:nth-child(5) { animation-delay: 0.5s; }
-
-      @keyframes starPop {
-        from { opacity: 0; transform: scale(0.4) rotate(-15deg); }
-        to   { opacity: 1; transform: scale(1) rotate(0deg); }
-      }
-
-      /* CTA Button */
-      .btn-review {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        width: 100%;
-        padding: 16px 24px;
-        background: #1a73e8;
-        color: #fff;
-        font-family: inherit;
-        font-size: 16px;
-        font-weight: 700;
-        border: none;
-        border-radius: 14px;
-        text-decoration: none;
-        cursor: pointer;
-        box-shadow: 0 8px 24px -6px rgba(26, 115, 232, 0.5);
-        transition: transform 0.15s ease, box-shadow 0.2s ease;
+      /* ── Rating card ── */
+      .rating-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px 20px 24px;
+        text-align: center;
         margin-bottom: 12px;
       }
 
-      .btn-review:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px -6px rgba(26, 115, 232, 0.65);
+      .rating-label {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 6px;
       }
 
-      .btn-review:active { transform: translateY(0); }
+      .rating-hint {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 28px;
+      }
 
-      .btn-review .g-badge {
-        width: 28px;
-        height: 28px;
+      /* Stars — focal point, tap target min 44px each */
+      .stars {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .star-btn {
+        background: none;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        font-size: 40px;
+        line-height: 1;
+        color: #d1d5db;
+        transition: color 0.12s, transform 0.1s;
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+      }
+
+      .star-btn:focus-visible {
+        outline: 3px solid var(--green);
+        outline-offset: 2px;
+      }
+
+      .star-btn.active {
+        color: #f59e0b;
+      }
+
+      .star-btn:hover,
+      .star-btn:focus-visible {
+        transform: scale(1.15);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .star-btn { transition: none; }
+        .star-btn:hover { transform: none; }
+      }
+
+      /* Rating label bawah bintang */
+      .rating-desc {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted);
+        min-height: 20px;
+        margin-bottom: 4px;
+        transition: color 0.15s;
+      }
+
+      /* ── Action area ── */
+      .action-area {
+        display: none;
+        margin-top: 20px;
+        border-top: 1px solid var(--border);
+        padding-top: 20px;
+        text-align: left;
+        animation: slideUp 0.2s ease both;
+      }
+
+      .action-area.show { display: block; }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .action-area { animation: none; }
+      }
+
+      /* Jalur bintang 4-5: tombol Google */
+      .btn-google {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 15px 20px;
+        background: var(--blue);
+        color: #fff;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.15s, transform 0.1s;
+      }
+
+      .btn-google:hover { background: #1557b0; }
+      .btn-google:active { transform: scale(0.98); }
+
+      .btn-google:focus-visible {
+        outline: 3px solid var(--blue);
+        outline-offset: 2px;
+      }
+
+      .btn-google .g-dot {
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         background: #fff;
         display: flex;
@@ -142,292 +235,355 @@
         flex-shrink: 0;
       }
 
-      .btn-review .g-badge svg {
-        width: 18px;
-        height: 18px;
+      .btn-google .g-dot svg {
+        width: 14px;
+        height: 14px;
       }
 
-      /* Countdown hint */
-      .hint {
-        font-size: 12px;
-        color: var(--muted);
-        margin-bottom: 32px;
-      }
-
-      .hint #countdown {
-        font-weight: 700;
-        color: var(--primary-light);
-      }
-
-      /* Divider */
-      .divider {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-      }
-      .divider::before,
-      .divider::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: #e2e8f0;
-      }
-      .divider span {
-        font-size: 11px;
-        color: #cbd5e1;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-      }
-
-      /* Keluhan link */
-      .btn-complaint {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--muted);
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-family: inherit;
-        text-decoration: underline;
-        text-decoration-color: transparent;
-        transition: color 0.15s, text-decoration-color 0.15s;
-      }
-
-      .btn-complaint:hover {
-        color: var(--primary);
-        text-decoration-color: var(--primary);
-      }
-
-      /* Keluhan Panel */
-      .complaint-panel {
-        display: none;
-        margin-top: 24px;
-        text-align: left;
-        animation: up 0.3s ease both;
-      }
-
-      .complaint-panel.show { display: block; }
-
-      .complaint-panel label {
-        display: block;
-        font-size: 13px;
+      /* Jalur bintang 1-3: complaint form */
+      .complaint-label {
+        font-size: 14px;
         font-weight: 600;
         color: var(--text);
         margin-bottom: 8px;
+        display: block;
       }
 
-      .complaint-panel textarea {
+      .complaint-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 12px;
+      }
+
+      textarea#complaint {
         width: 100%;
-        min-height: 110px;
+        min-height: 100px;
         padding: 12px 14px;
         font-family: inherit;
         font-size: 14px;
         color: var(--text);
         background: #fff;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
         resize: vertical;
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        margin-bottom: 10px;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        margin-bottom: 12px;
       }
 
-      .complaint-panel textarea:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+      textarea#complaint:focus {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
       }
 
-      .btn-send {
+      .btn-wa {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         width: 100%;
-        padding: 13px;
-        background: var(--primary);
+        padding: 15px 20px;
+        background: #25d366;
         color: #fff;
         font-family: inherit;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 700;
         border: none;
         border-radius: 12px;
         cursor: pointer;
-        transition: background 0.15s, transform 0.15s;
+        transition: background 0.15s, transform 0.1s;
       }
 
-      .btn-send:hover { background: #4338ca; transform: translateY(-1px); }
-      .btn-send:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+      .btn-wa:hover { background: #1aad53; }
+      .btn-wa:active { transform: scale(0.98); }
+      .btn-wa:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+      .btn-wa:focus-visible {
+        outline: 3px solid #25d366;
+        outline-offset: 2px;
+      }
 
       .err-msg {
         display: none;
         margin-top: 8px;
         font-size: 12px;
-        color: #e11d48;
+        color: var(--red);
         text-align: center;
       }
+
       .err-msg.show { display: block; }
 
-      /* Footer */
-      .footer {
-        margin-top: 36px;
-        font-size: 11px;
-        color: #cbd5e1;
-        letter-spacing: 0.3px;
+      /* ── Loading skeleton ── */
+      .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+        border-radius: 6px;
       }
-      .footer b { color: #94a3b8; }
+
+      @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .skeleton { animation: none; background: #e5e7eb; }
+      }
+
+      /* ── Error state ── */
+      .state-error {
+        display: none;
+        text-align: center;
+        padding: 24px 0;
+      }
+
+      .state-error.show { display: block; }
+
+      .state-error .err-icon { font-size: 36px; margin-bottom: 8px; }
+      .state-error p { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+
+      .btn-retry {
+        background: none;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .btn-retry:hover { background: var(--border); }
+      .btn-retry:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+
+      /* ── Footer ── */
+      .footer {
+        margin-top: 20px;
+        font-size: 11px;
+        color: #9ca3af;
+        text-align: center;
+        letter-spacing: 0.2px;
+      }
+
+      .footer b { color: var(--muted); }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <!-- Google icon -->
-      <div class="g-icon">
-        <!-- Official Google "G" SVG -->
-        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          <path fill="none" d="M0 0h48v48H0z"/>
-        </svg>
+    <div class="page" role="main">
+
+      <!-- Business card: loading skeleton, then real data -->
+      <div class="biz-card" id="biz-card">
+        <div class="biz-icon" id="biz-icon" aria-hidden="true">🏪</div>
+        <div class="biz-info">
+          <div class="biz-name" id="biz-name">
+            <span class="skeleton" style="display:block;width:120px;height:16px;" aria-hidden="true"></span>
+          </div>
+          <div class="biz-addr" id="biz-addr">
+            <span class="skeleton" style="display:block;width:200px;height:12px;margin-top:5px;" aria-hidden="true"></span>
+          </div>
+        </div>
       </div>
 
-      <!-- Business info -->
-      <div class="biz-name" id="biz-name">Memuat...</div>
-      <div class="biz-addr" id="biz-addr"></div>
-
-      <!-- Decorative stars -->
-      <div class="stars-row">
-        <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+      <!-- Error state (hidden by default) -->
+      <div class="state-error" id="state-error" role="alert">
+        <div class="err-icon" aria-hidden="true">⚠️</div>
+        <p id="state-error-msg">Gagal memuat data bisnis. Periksa koneksi Anda.</p>
+        <button class="btn-retry" id="btn-retry" type="button">Coba Lagi</button>
       </div>
 
-      <!-- CTA button -->
-      <a id="btn-review" href="#" target="_blank" rel="noopener noreferrer" class="btn-review">
-        <span class="g-badge">
-          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            <path fill="none" d="M0 0h48v48H0z"/>
-          </svg>
-        </span>
-        Tulis Ulasan di Google Maps
-      </a>
+      <!-- Rating card -->
+      <div class="rating-card" id="rating-card">
+        <p class="rating-label">Bagaimana pengalaman Anda?</p>
+        <p class="rating-hint">Ketuk bintang untuk memberi penilaian</p>
 
-      <!-- Auto redirect hint -->
-      <p class="hint">Otomatis membuka dalam <span id="countdown">3</span> detik...</p>
+        <div class="stars" role="group" aria-label="Penilaian bintang">
+          <button class="star-btn" data-r="1" type="button" aria-label="1 bintang">★</button>
+          <button class="star-btn" data-r="2" type="button" aria-label="2 bintang">★</button>
+          <button class="star-btn" data-r="3" type="button" aria-label="3 bintang">★</button>
+          <button class="star-btn" data-r="4" type="button" aria-label="4 bintang">★</button>
+          <button class="star-btn" data-r="5" type="button" aria-label="5 bintang">★</button>
+        </div>
 
-      <!-- Complaint section -->
-      <div class="divider"><span>atau</span></div>
+        <p class="rating-desc" id="rating-desc" aria-live="polite"></p>
 
-      <button type="button" class="btn-complaint" id="btn-open-complaint">
-        😕 Pengalaman kurang memuaskan?
-      </button>
+        <!-- Path A: 4-5 bintang → Google Review -->
+        <div class="action-area" id="action-google" aria-live="polite">
+          <a id="btn-google" href="#" target="_blank" rel="noopener noreferrer" class="btn-google">
+            <span class="g-dot" aria-hidden="true">
+              <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+            </span>
+            Tulis Ulasan di Google
+          </a>
+        </div>
 
-      <div class="complaint-panel" id="complaint-panel">
-        <label for="complaint-text">Ceritakan apa yang bisa kami perbaiki:</label>
-        <textarea id="complaint-text" maxlength="1000" placeholder="Tulis masukan atau keluhan Anda di sini..."></textarea>
-        <button type="button" class="btn-send" id="btn-send">Kirim ke Pemilik Usaha</button>
-        <p class="err-msg" id="err-msg"></p>
+        <!-- Path B: 1-3 bintang → complaint → WhatsApp -->
+        <div class="action-area" id="action-complaint">
+          <label class="complaint-label" for="complaint">Ada yang bisa kami perbaiki?</label>
+          <p class="complaint-sub">Masukan Anda langsung diterima pemilik usaha.</p>
+          <textarea
+            id="complaint"
+            maxlength="1000"
+            placeholder="Ceritakan pengalaman Anda..."
+            aria-required="true"
+          ></textarea>
+          <button type="button" class="btn-wa" id="btn-send">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.112.546 4.1 1.503 5.831L0 24l6.335-1.47A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.792 9.792 0 01-5.001-1.372l-.359-.214-3.72.864.9-3.63-.234-.372A9.795 9.795 0 012.182 12C2.182 6.577 6.577 2.182 12 2.182S21.818 6.577 21.818 12 17.423 21.818 12 21.818z"/>
+            </svg>
+            Kirim ke Pemilik
+          </button>
+          <p class="err-msg" id="err-msg" role="alert"></p>
+        </div>
       </div>
 
-      <div class="footer">Didukung oleh <b>ReviewKita</b></div>
+      <footer class="footer">Didukung oleh <b>ReviewKita</b></footer>
     </div>
 
     <script>
       (async () => {
         const cardCode = window.location.pathname.split('/').pop();
+        const stars = Array.from(document.querySelectorAll('.star-btn'));
+        const ratingDesc = document.getElementById('rating-desc');
+        const actionGoogle = document.getElementById('action-google');
+        const actionComplaint = document.getElementById('action-complaint');
+        const btnGoogle = document.getElementById('btn-google');
+        const btnSend = document.getElementById('btn-send');
+        const errMsg = document.getElementById('err-msg');
+        const bizNameEl = document.getElementById('biz-name');
+        const bizAddrEl = document.getElementById('biz-addr');
+        const stateError = document.getElementById('state-error');
+
+        const LABELS = ['', 'Sangat kurang', 'Kurang', 'Cukup', 'Bagus', 'Sangat bagus!'];
+        let currentRating = 0;
         let reviewUrl = '#';
 
-        // Load business info
-        try {
-          const res = await fetch(`/api/cards/${cardCode}/info`);
-          const data = await res.json();
-          if (data.success) {
-            document.getElementById('biz-name').textContent = data.business_name;
-            document.getElementById('biz-addr').textContent = data.address;
-            document.title = `Ulasan Google – ${data.business_name}`;
-            reviewUrl = data.review_url;
-            document.getElementById('btn-review').href = reviewUrl;
-          } else {
-            document.getElementById('biz-name').textContent = 'Bisnis';
-            document.getElementById('biz-addr').textContent = 'Informasi tidak tersedia';
+        // ── Load business data ──
+        async function loadBiz() {
+          stateError.classList.remove('show');
+          try {
+            const res = await fetch(`/api/cards/${cardCode}/info`);
+            const data = await res.json();
+            if (data.success) {
+              bizNameEl.textContent = data.business_name;
+              bizAddrEl.textContent = data.address || '';
+              document.title = `Penilaian: ${data.business_name}`;
+              reviewUrl = data.review_url || '#';
+              btnGoogle.href = reviewUrl;
+            } else {
+              throw new Error(data.message || 'Data tidak ditemukan');
+            }
+          } catch (e) {
+            bizNameEl.textContent = 'Bisnis';
+            bizAddrEl.textContent = 'Gagal memuat data';
+            document.getElementById('state-error-msg').textContent = 'Gagal memuat data bisnis. Periksa koneksi Anda.';
+            stateError.classList.add('show');
           }
-        } catch (e) {
-          document.getElementById('biz-name').textContent = 'Bisnis';
-          document.getElementById('biz-addr').textContent = 'Gagal memuat data';
         }
 
-        // Record scan event & auto-redirect countdown
-        fetch(`/api/cards/${cardCode}/rate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rating: 5 })
-        }).catch(() => {});
+        document.getElementById('btn-retry').addEventListener('click', loadBiz);
+        await loadBiz();
 
-        let secs = 3;
-        const cdEl = document.getElementById('countdown');
-        const timer = setInterval(() => {
-          secs--;
-          cdEl.textContent = secs;
-          if (secs <= 0) {
-            clearInterval(timer);
-            if (reviewUrl && reviewUrl !== '#') {
-              window.location.href = reviewUrl;
-            }
+        // ── Star interaction ──
+        function setStars(r) {
+          currentRating = r;
+          stars.forEach((btn) => {
+            const v = parseInt(btn.dataset.r, 10);
+            btn.classList.toggle('active', v <= r);
+          });
+          ratingDesc.textContent = LABELS[r] || '';
+          ratingDesc.style.color = r >= 4 ? '#16a34a' : r > 0 ? '#dc2626' : '#6b7280';
+
+          // Show relevant action area
+          actionGoogle.classList.remove('show');
+          actionComplaint.classList.remove('show');
+          if (r >= 4) {
+            actionGoogle.classList.add('show');
+            if (reviewUrl !== '#') btnGoogle.href = reviewUrl;
+          } else if (r >= 1) {
+            actionComplaint.classList.add('show');
           }
-        }, 1000);
+        }
 
-        // Stop countdown when user manually clicks button
-        document.getElementById('btn-review').addEventListener('click', () => {
-          clearInterval(timer);
-          document.querySelector('.hint').style.display = 'none';
+        stars.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const r = parseInt(btn.dataset.r, 10);
+            setStars(r);
+            // Log rating event for stats (4-5 star path)
+            if (r >= 4) {
+              fetch(`/api/cards/${cardCode}/rate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rating: r }),
+              }).catch(() => {});
+            }
+          });
         });
 
-        // Complaint toggle
-        document.getElementById('btn-open-complaint').addEventListener('click', () => {
-          clearInterval(timer);
-          document.querySelector('.hint').textContent = '';
-          const panel = document.getElementById('complaint-panel');
-          panel.classList.toggle('show');
+        // Keyboard navigation for stars (arrow keys)
+        stars.forEach((btn, i) => {
+          btn.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && i < stars.length - 1) {
+              e.preventDefault(); stars[i + 1].focus();
+            } else if (e.key === 'ArrowLeft' && i > 0) {
+              e.preventDefault(); stars[i - 1].focus();
+            }
+          });
         });
 
-        // Send complaint to WhatsApp
-        document.getElementById('btn-send').addEventListener('click', async () => {
-          const text = document.getElementById('complaint-text').value.trim();
-          const errEl = document.getElementById('err-msg');
-          errEl.classList.remove('show');
+        // ── Google button click: log before navigate ──
+        btnGoogle.addEventListener('click', () => {
+          if (currentRating >= 4) {
+            fetch(`/api/cards/${cardCode}/rate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ rating: currentRating }),
+            }).catch(() => {});
+          }
+        });
+
+        // ── Send complaint to WhatsApp ──
+        btnSend.addEventListener('click', async () => {
+          const text = document.getElementById('complaint').value.trim();
+          errMsg.classList.remove('show');
 
           if (!text) {
-            errEl.textContent = 'Keluhan wajib diisi sebelum dikirim.';
-            errEl.classList.add('show');
+            errMsg.textContent = 'Tulis masukan Anda sebelum mengirim.';
+            errMsg.classList.add('show');
+            document.getElementById('complaint').focus();
             return;
           }
 
-          const btn = document.getElementById('btn-send');
-          btn.disabled = true;
-          btn.textContent = 'Mengirim...';
+          btnSend.disabled = true;
+          btnSend.textContent = 'Mengirim...';
 
           try {
             const r = await fetch(`/api/cards/${cardCode}/feedback`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ rating: 1, complaint: text }),
+              body: JSON.stringify({ rating: currentRating, complaint: text }),
             });
             const d = await r.json();
             if (d.success) {
               window.location.href = d.wa_url;
             } else {
-              errEl.textContent = d.message || 'Gagal mengirim.';
-              errEl.classList.add('show');
-              btn.disabled = false;
-              btn.textContent = 'Kirim ke Pemilik Usaha';
+              errMsg.textContent = d.message || 'Gagal mengirim. Coba lagi.';
+              errMsg.classList.add('show');
+              btnSend.disabled = false;
+              btnSend.textContent = 'Kirim ke Pemilik';
             }
           } catch {
-            errEl.textContent = 'Gagal mengirim. Coba lagi.';
-            errEl.classList.add('show');
-            btn.disabled = false;
-            btn.textContent = 'Kirim ke Pemilik Usaha';
+            errMsg.textContent = 'Gagal mengirim. Periksa koneksi Anda.';
+            errMsg.classList.add('show');
+            btnSend.disabled = false;
+            btnSend.textContent = 'Kirim ke Pemilik';
           }
         });
       })();
